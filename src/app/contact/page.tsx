@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Contact" };
 
 const generalFaqs = [
   { q: "How long does delivery take?", a: "Orders are dispatched within 1–2 business days and delivered in 5–7 business days from dispatch. Remote areas may take a little longer." },
-  { q: "Is shipping free?", a: "Yes, on orders above ₹500. Smaller orders may carry a delivery fee, shown at checkout. Cash on delivery is available." },
+  { q: "Is shipping free?", a: "Yes, on orders above ₹500. Orders below ₹500 have a ₹49 delivery fee. You can pay securely by UPI, card, netbanking or wallet." },
   { q: "Can I return a product?", a: "For hygiene reasons, opened products can't be returned. If your order arrives damaged or wrong, report it within 48 hours with an unboxing video and we'll arrange a replacement." },
   { q: "Are Elanmist products suitable for sensitive skin?", a: "Yes. Every formula is designed to be gentle and skin-kind." },
   { q: "Are your products paraben-free?", a: "Yes. Our formulas are paraben-free and made in India." },

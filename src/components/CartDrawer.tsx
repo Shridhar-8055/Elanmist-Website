@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useCart } from "@/lib/cart";
+import { shippingFor } from "@/lib/pricing";
 import { FREE_SHIPPING_THRESHOLD, inr, products, shippingInfo } from "@/lib/products";
 import { CloseIcon, LockIcon, MinusIcon, PlusIcon, TruckIcon } from "./icons";
 import { altFor } from "@/lib/imageAlt";
@@ -151,7 +152,7 @@ export function CartDrawer() {
                 <TruckIcon className="size-5 shrink-0" />
                 {subtotal >= FREE_SHIPPING_THRESHOLD
                   ? "You've unlocked free shipping"
-                  : `Add ${inr(FREE_SHIPPING_THRESHOLD - subtotal)} more for free shipping`}
+                  : `Add ${inr(FREE_SHIPPING_THRESHOLD - subtotal)} more for free shipping (₹49 otherwise)`}
               </p>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-pale">
                 <div
@@ -167,9 +168,15 @@ export function CartDrawer() {
               <span className="font-semibold text-ink">{inr(mrpTotal - subtotal)}</span>
             </div>
           )}
+          {count > 0 && (
+            <div className="flex justify-between text-sm text-ink/70">
+              <span>Delivery</span>
+              <span className="font-semibold text-ink">{shippingFor(subtotal) ? inr(shippingFor(subtotal)) : "Free"}</span>
+            </div>
+          )}
           <div className="flex items-baseline justify-between">
-            <span className="text-sm font-semibold">Estimated total</span>
-            <span className="text-2xl font-black tracking-tight">{inr(subtotal)}</span>
+            <span className="text-sm font-semibold">Total</span>
+            <span className="text-2xl font-black tracking-tight">{inr(subtotal + (count ? shippingFor(subtotal) : 0))}</span>
           </div>
           <p className="text-sm text-ink/70">
             Taxes included. {shippingInfo.dispatch}; delivery in 5–7 business days.{" "}
@@ -177,13 +184,23 @@ export function CartDrawer() {
               Shipping &amp; returns
             </Link>
           </p>
-          <button
-            type="button"
-            disabled={count === 0}
-            className="pill-dark flex h-[54px] w-full items-center justify-center gap-2 rounded-full text-base font-semibold disabled:opacity-40"
-          >
-            <LockIcon className="size-4" /> Check out
-          </button>
+          {count > 0 ? (
+            <Link
+              href="/checkout"
+              onClick={close}
+              className="pill-dark flex h-[54px] w-full items-center justify-center gap-2 rounded-full text-base font-semibold"
+            >
+              <LockIcon className="size-4" /> Check out · {inr(subtotal + shippingFor(subtotal))}
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="pill-dark flex h-[54px] w-full items-center justify-center gap-2 rounded-full text-base font-semibold opacity-40"
+            >
+              <LockIcon className="size-4" /> Check out
+            </button>
+          )}
         </div>
       </aside>
     </div>

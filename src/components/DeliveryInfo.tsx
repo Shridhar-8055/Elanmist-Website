@@ -5,7 +5,7 @@ import { ClockIcon, ReturnIcon, TruckIcon } from "./icons";
 // Shipping, delivery and returns at a glance — shown in the buy box and the cart.
 export function DeliveryInfo({ className = "", compact = false }: { className?: string; compact?: boolean }) {
   const rows = [
-    { Icon: TruckIcon, title: shippingInfo.freeShipping, body: shippingInfo.cod },
+    { Icon: TruckIcon, title: shippingInfo.freeShipping, body: `${shippingInfo.feeNote}. ${shippingInfo.payment}.` },
     { Icon: ClockIcon, title: shippingInfo.dispatch, body: shippingInfo.delivery },
     {
       Icon: ReturnIcon,

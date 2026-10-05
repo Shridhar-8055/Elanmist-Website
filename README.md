@@ -32,4 +32,8 @@ npm run lint
 
 ## Not yet connected
 
-Checkout/payments, newsletter and form submissions, order tracking, and the Privacy / Terms policy text.
+Newsletter and form submissions, order tracking, and the Privacy / Terms policy text.
+
+## Payments
+
+Razorpay checkout is built in. See [PAYMENTS.md](PAYMENTS.md) for setup, testing and the go-live checklist. Copy `.env.example` and add your keys.

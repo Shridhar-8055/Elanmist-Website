@@ -16,6 +16,7 @@ type CartContextValue = {
   add: (slug: string, qty?: number) => void;
   setQty: (slug: string, qty: number) => void;
   remove: (slug: string) => void;
+  clear: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -75,6 +76,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const remove = useCallback((slug: string) => writeCart((prev) => prev.filter((l) => l.slug !== slug)), []);
+  const clear = useCallback(() => writeCart(() => []), []);
 
   const value = useMemo<CartContextValue>(() => {
     const lines = raw.flatMap((l) => {
@@ -92,8 +94,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       add,
       setQty,
       remove,
+      clear,
     };
-  }, [raw, isOpen, add, setQty, remove]);
+  }, [raw, isOpen, add, setQty, remove, clear]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

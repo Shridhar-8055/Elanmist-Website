@@ -104,7 +104,7 @@ export function Footer() {
         {/* Shipping, delivery and returns at a glance. */}
         <ul className="mt-16 grid gap-3 sm:grid-cols-3">
           {[
-            { Icon: TruckIcon, title: shippingInfo.freeShipping, body: "Cash on delivery available" },
+            { Icon: TruckIcon, title: shippingInfo.freeShipping, body: "Pay securely by UPI, card or netbanking" },
             { Icon: ClockIcon, title: "Dispatched in 1–2 business days", body: "Delivered in 5–7 business days" },
             { Icon: ReturnIcon, title: "Damaged or wrong item?", body: "Report within 48 hours for a replacement" },
           ].map(({ Icon, title, body }) => (

@@ -6,7 +6,7 @@ import { shippingInfo } from "@/lib/products";
 // Shipping facts come from the client's current policy (see shippingInfo).
 const messages = [
   shippingInfo.freeShipping,
-  "Ships in 1–2 business days · COD available",
+  "Ships in 1–2 business days · Pay by UPI or card",
   "Powered with Indian Gooseberry · Made in India",
 ];
 

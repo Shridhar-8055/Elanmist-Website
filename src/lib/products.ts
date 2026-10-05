@@ -222,9 +222,11 @@ export function averageRating(reviews: Review[]) {
 export const FREE_SHIPPING_THRESHOLD = 500;
 export const shippingInfo = {
   freeShipping: `Free shipping on orders above ₹${FREE_SHIPPING_THRESHOLD}`,
+  feeNote: `₹49 delivery fee on orders below ₹${FREE_SHIPPING_THRESHOLD}`,
   dispatch: "Dispatched within 1–2 business days",
   delivery: "Delivered in 5–7 business days from dispatch",
-  cod: "Cash on delivery available",
+  // COD is in the client policy but not offered online yet (phase 2: needs an order database).
+  payment: "Secure prepaid checkout: UPI, cards, netbanking & wallets",
   returns: "No returns on opened products for hygiene reasons. Damaged or wrong items are replaced — report within 48 hours with an unboxing video.",
   support: { email: "support@elanmist.com", phone: "9353276878" },
 };

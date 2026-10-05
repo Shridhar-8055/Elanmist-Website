@@ -14,17 +14,17 @@ const policies: Record<string, { title: string; source: string; sections?: Secti
       {
         heading: "Shipping",
         points: [
-          "Free shipping on orders above ₹500. Orders below ₹500 may carry a delivery fee, shown at checkout.",
+          "Free shipping on orders above ₹500. Orders below ₹500 have a ₹49 delivery fee, shown at checkout.",
           "Orders are processed within 1–2 business days. We don't process orders on Sundays or public holidays.",
           "Estimated delivery is 5–7 business days from dispatch. Remote areas may take longer.",
           "If your pincode isn't serviceable, the order is cancelled and fully refunded.",
         ],
       },
       {
-        heading: "Cash on delivery",
+        heading: "Payment",
         points: [
-          "Cash on delivery is available.",
-          "COD may be restricted after repeated rejected or failed deliveries.",
+          "Orders on this website are prepaid through Razorpay: UPI, credit and debit cards, netbanking and wallets.",
+          "Payments are processed securely by Razorpay. We never see or store your card details.",
         ],
       },
       {
@@ -41,7 +41,6 @@ const policies: Record<string, { title: string; source: string; sections?: Secti
         points: [
           "Approved refunds are processed within 7–10 business days.",
           "Prepaid orders are refunded to the original payment method.",
-          "COD orders are refunded to a bank account or UPI. We can't give cash refunds for delivered orders.",
         ],
       },
       {

@@ -43,6 +43,8 @@ Set these in **Vercel → Project → Settings → Environment Variables** (see 
 | `RAZORPAY_KEY_ID` | Razorpay Dashboard → Account & Settings → API Keys |
 | `RAZORPAY_KEY_SECRET` | Shown once when you generate the key. Store it safely. |
 | `RAZORPAY_WEBHOOK_SECRET` | A long random string you choose when adding the webhook |
+| `GOOGLE_SHEETS_WEBHOOK_URL` | Apps Script web-app URL (see the Google Sheets guide) |
+| `GOOGLE_SHEETS_WEBHOOK_SECRET` | Same value as `SHARED_SECRET` in the Apps Script |
 
 Use `rzp_test_…` keys in **Preview** and `rzp_live_…` keys in **Production**. Redeploy after changing variables.
 
@@ -78,7 +80,8 @@ Add it separately in Test mode and in Live mode, because each mode has its own w
 
 ## Where orders live today
 
-Each Razorpay order carries the customer's name, email, phone, address, items and totals in its **notes**, so the team can see and ship paid orders from the Razorpay Dashboard → Orders/Transactions.
+- **Google Sheet:** every checkout is written as a row the moment the shopper presses Pay. The row moves through *Awaiting payment → Paid / Payment failed*. See [integrations/google-sheets/README.md](integrations/google-sheets/README.md).
+- **Razorpay:** each order also carries the customer's name, email, phone, address, items and totals in its **notes** (Dashboard → Orders/Transactions).
 
 ## Phase 2 (recommended next)
 

@@ -292,6 +292,13 @@ export function CheckoutClient() {
                 UPI, cards, netbanking and wallets via Razorpay. Your card details never touch our servers.
               </p>
               <p className="mt-2 text-sm text-ink/70">
+                We save your contact and delivery details to process and deliver your order, and may contact you about
+                it.{" "}
+                <Link href="/policies/privacy" className="font-semibold text-ink underline underline-offset-2">
+                  Privacy policy
+                </Link>
+              </p>
+              <p className="mt-2 text-sm text-ink/70">
                 {shippingInfo.dispatch}; delivered in 5–7 business days.{" "}
                 <Link href="/policies/shipping-and-returns" className="font-semibold text-ink underline underline-offset-2">
                   Shipping &amp; returns

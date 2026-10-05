@@ -1,10 +1,13 @@
 import { randomUUID } from "node:crypto";
+import { after } from "next/server";
 import { createOrderSchema, fieldErrors } from "@/lib/checkout-schema";
-import { priceCart, PricingError } from "@/lib/pricing";
+import { priceCart, PricingError, type OrderTotals } from "@/lib/pricing";
 import { createOrder, publicKeyId, RazorpayApiError, RazorpayConfigError, toPaise } from "@/lib/razorpay";
+import { recordOrder, type SheetStatus } from "@/lib/sheets";
 
 // Creates a Razorpay order for the cart. The amount is always computed here from
 // the catalogue — the browser only tells us which products and how many.
+// Every checkout attempt is also written to the orders Google Sheet.
 export async function POST(request: Request) {
   let body: unknown;
   try {
@@ -22,12 +25,42 @@ export async function POST(request: Request) {
   }
   const { customer, items } = parsed.data;
 
+  let totals: OrderTotals;
   try {
-    const totals = priceCart(items);
-    const receipt = `EM-${Date.now().toString(36).toUpperCase()}-${randomUUID().slice(0, 6).toUpperCase()}`;
+    totals = priceCart(items);
+  } catch (error) {
+    if (error instanceof PricingError) return Response.json({ error: error.message }, { status: 422 });
+    throw error;
+  }
 
+  const receipt = `EM-${Date.now().toString(36).toUpperCase()}-${randomUUID().slice(0, 6).toUpperCase()}`;
+  const itemsText = totals.lines.map((l) => `${l.name} x${l.qty}`).join("; ");
+
+  // Capture the shopper's details in the sheet whatever happens next, after the
+  // response is sent so it never slows checkout down.
+  const capture = (status: SheetStatus, extra: { razorpayOrderId?: string; notes?: string } = {}) =>
+    after(() =>
+      recordOrder(receipt, {
+        status,
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        address1: customer.address1,
+        address2: customer.address2,
+        city: customer.city,
+        state: customer.state,
+        pincode: customer.pincode,
+        items: itemsText,
+        subtotal: totals.subtotal,
+        shipping: totals.shipping,
+        total: totals.total,
+        ...extra,
+      }),
+    );
+
+  try {
     // Razorpay notes: max 15 keys, 256 chars each. They keep the shipping details
-    // with the payment in the Razorpay dashboard until an order database is added.
+    // with the payment in the Razorpay dashboard as a second record of the order.
     const clip = (s: string) => s.slice(0, 250);
     const order = await createOrder({
       amountPaise: toPaise(totals.total),
@@ -39,12 +72,14 @@ export async function POST(request: Request) {
         address_line1: clip(customer.address1),
         address_line2: clip(customer.address2),
         city_state_pin: clip(`${customer.city}, ${customer.state} ${customer.pincode}`),
-        items: clip(totals.lines.map((l) => `${l.name} x${l.qty}`).join("; ")),
+        items: clip(itemsText),
         subtotal: String(totals.subtotal),
         shipping: String(totals.shipping),
         total: String(totals.total),
       },
     });
+
+    capture("Awaiting payment", { razorpayOrderId: order.id });
 
     return Response.json({
       orderId: order.id,
@@ -55,9 +90,8 @@ export async function POST(request: Request) {
       totals,
     });
   } catch (error) {
-    if (error instanceof PricingError) {
-      return Response.json({ error: error.message }, { status: 422 });
-    }
+    capture("Payment setup failed", { notes: error instanceof Error ? error.message.slice(0, 200) : "unknown error" });
+
     if (error instanceof RazorpayConfigError) {
       console.error("[checkout/order]", error.message);
       return Response.json({ error: "Payments are not set up yet. Please try again later." }, { status: 503 });

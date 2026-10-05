@@ -1,4 +1,6 @@
+import { after } from "next/server";
 import { verifyPaymentSchema } from "@/lib/checkout-schema";
+import { recordOrder } from "@/lib/sheets";
 import {
   fetchOrder,
   fetchPayment,
@@ -44,6 +46,15 @@ export async function POST(request: Request) {
       });
       return Response.json({ verified: false, error: "Payment could not be confirmed." }, { status: 400 });
     }
+
+    after(() =>
+      recordOrder(order.receipt, {
+        status: "Paid",
+        razorpayOrderId: orderId,
+        paymentId,
+        method: payment.method,
+      }),
+    );
 
     console.info("[checkout/verify] payment verified", {
       orderId,

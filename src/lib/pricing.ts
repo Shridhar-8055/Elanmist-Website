@@ -1,7 +1,6 @@
-import { FREE_SHIPPING_THRESHOLD, getProduct } from "./products";
+import { FREE_SHIPPING_THRESHOLD, getProduct, SHIPPING_FEE } from "./products";
 
-// Delivery fee for orders under the free-shipping threshold (agreed with the client: ₹49).
-export const SHIPPING_FEE = 49;
+export { SHIPPING_FEE };
 export const MAX_QTY_PER_ITEM = 10;
 
 export type CartLineInput = { slug: string; qty: number };

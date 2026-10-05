@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { shippingInfo } from "@/lib/products";
+import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE, shippingInfo } from "@/lib/products";
 
 type Section = { heading: string; points: string[] };
 
@@ -14,7 +14,7 @@ const policies: Record<string, { title: string; source: string; sections?: Secti
       {
         heading: "Shipping",
         points: [
-          "Free shipping on orders above ₹500. Orders below ₹500 have a ₹49 delivery fee, shown at checkout.",
+          `Free shipping on orders above ₹${FREE_SHIPPING_THRESHOLD}. Orders below that have a ₹${SHIPPING_FEE} delivery fee, shown at checkout.`,
           "Orders are processed within 1–2 business days. We don't process orders on Sundays or public holidays.",
           "Estimated delivery is 5–7 business days from dispatch. Remote areas may take longer.",
           "If your pincode isn't serviceable, the order is cancelled and fully refunded.",

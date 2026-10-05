@@ -28,7 +28,7 @@ Separately: Razorpay ──► POST /api/webhooks/razorpay  (signature-checked)
 
 ## Security measures
 
-- **Server-side pricing.** The browser sends only product slugs and quantities. Prices, the ₹49 delivery fee (under ₹500) and totals are computed on the server from `src/lib/products.ts`.
+- **Server-side pricing.** The browser sends only product slugs and quantities. Prices, the delivery fee (`SHIPPING_FEE`, currently ₹70 under ₹500) and totals are computed on the server from `src/lib/products.ts`.
 - **Signature verification.** Both the checkout response and webhooks are verified with HMAC-SHA256, compared in constant time.
 - **Double-check with Razorpay.** After the signature passes, the payment and order are fetched from the Razorpay API, and the status, order id and amount must all match.
 - **Secrets stay server-side.** `src/lib/razorpay.ts` is `server-only`. Only the public key id reaches the browser. Card data goes straight to Razorpay.

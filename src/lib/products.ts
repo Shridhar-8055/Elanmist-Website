@@ -220,9 +220,11 @@ export function averageRating(reviews: Review[]) {
 
 // Shipping & returns, from the client's current policy (elanmist.com/shipping-and-returns-policy).
 export const FREE_SHIPPING_THRESHOLD = 500;
+// Delivery fee for orders under the threshold (agreed with the client). Change it here only.
+export const SHIPPING_FEE = 70;
 export const shippingInfo = {
   freeShipping: `Free shipping on orders above ₹${FREE_SHIPPING_THRESHOLD}`,
-  feeNote: `₹49 delivery fee on orders below ₹${FREE_SHIPPING_THRESHOLD}`,
+  feeNote: `₹${SHIPPING_FEE} delivery fee on orders below ₹${FREE_SHIPPING_THRESHOLD}`,
   dispatch: "Dispatched within 1–2 business days",
   delivery: "Delivered in 5–7 business days from dispatch",
   // COD is in the client policy but not offered online yet (phase 2: needs an order database).

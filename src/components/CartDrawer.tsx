@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useCart } from "@/lib/cart";
 import { shippingFor } from "@/lib/pricing";
-import { FREE_SHIPPING_THRESHOLD, inr, products, shippingInfo } from "@/lib/products";
+import { FREE_SHIPPING_THRESHOLD, inr, products, SHIPPING_FEE, shippingInfo } from "@/lib/products";
 import { CloseIcon, LockIcon, MinusIcon, PlusIcon, TruckIcon } from "./icons";
 import { altFor } from "@/lib/imageAlt";
 
@@ -152,7 +152,7 @@ export function CartDrawer() {
                 <TruckIcon className="size-5 shrink-0" />
                 {subtotal >= FREE_SHIPPING_THRESHOLD
                   ? "You've unlocked free shipping"
-                  : `Add ${inr(FREE_SHIPPING_THRESHOLD - subtotal)} more for free shipping (₹49 otherwise)`}
+                  : `Add ${inr(FREE_SHIPPING_THRESHOLD - subtotal)} more for free shipping (₹${SHIPPING_FEE} otherwise)`}
               </p>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-pale">
                 <div

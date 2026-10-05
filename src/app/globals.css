@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+/*
+  Elanmist design tokens.
+  Structure follows the Kekka reference (mist-grey system, pale cards, ink pills),
+  warmed to sit with Elanmist's product photography (wine, cocoa and slate backdrops).
+*/
+:root {
+  --ink: #0d0b0b;
+  /* Darkened for WCAG AA contrast: #6b635e on white is 5.6:1. */
+  --mist: #6b635e;
+  --mist-deep: #5b5450;
+  --mist-soft: #b9b2ad;
+  --pale: #f2eeea;
+  --pale-2: #e7e1dc;
+  --paper: #ffffff;
+  --wine: #230a0e;
+  --cocoa: #37201f;
+  --slate: #33364a;
+
+  --ease-circ: cubic-bezier(0.85, 0, 0.15, 1);
+  --ease-bouncy: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-mist: var(--mist);
+  --color-mist-deep: var(--mist-deep);
+  --color-mist-soft: var(--mist-soft);
+  --color-pale: var(--pale);
+  --color-pale-2: var(--pale-2);
+  --color-paper: var(--paper);
+  --color-wine: var(--wine);
+  --color-cocoa: var(--cocoa);
+  --color-slate: var(--slate);
+
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-inter-tight);
+  --font-serif: var(--font-instrument);
+  --font-poppins: var(--font-poppins);
+  --font-dm: var(--font-dm-sans);
+
+  --ease-circ: var(--ease-circ);
+  --ease-bouncy: var(--ease-bouncy);
+  --ease-out: var(--ease-out);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Larger type on phones: small utility sizes are scaled up below 768px so body
+   copy never drops under 13px. Unlayered, so it wins over Tailwind's utilities. */
+@media (max-width: 767px) {
+  body { font-size: 16px; }
+  .text-\[10px\], .text-\[11px\] { font-size: 12px; }
+  .text-xs { font-size: 13px; }
+  .text-\[13px\] { font-size: 14px; }
+  .text-sm { font-size: 15px; }
+  .text-\[15px\] { font-size: 16px; }
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* Big, tight, uppercase product type — the reference's signature. */
+.display {
+  font-family: var(--font-inter-tight), var(--font-inter), sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.055em;
+  line-height: 0.86;
+}
+
+/* Dark pill button with the subtle glassy sheen from the reference. */
+.pill-dark {
+  background:
+    radial-gradient(62% 78% at 36% 116%, rgb(255 255 255 / 0.28) 0%, transparent 100%),
+    linear-gradient(262deg, rgb(255 255 255 / 0.1) 6%, transparent 25%),
+    var(--ink);
+  border: 1px solid rgb(255 255 255 / 0.28);
+  color: #fff;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Soft fade so product photos melt into their panel colour. */
+.photo-fade {
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%);
+}
+
+@keyframes card-in {
+  0% { opacity: 0; transform: translateY(30px); }
+  70% { opacity: 1; transform: translateY(-6px); }
+  100% { transform: none; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.9s var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

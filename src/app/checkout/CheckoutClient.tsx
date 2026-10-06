@@ -3,8 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, LockIcon, ShieldIcon, TruckIcon } from "@/components/icons";
+import { Turnstile, TURNSTILE_SITE_KEY, type TurnstileHandle } from "@/components/Turnstile";
 import { useCart } from "@/lib/cart";
 import { customerSchema, fieldErrors, INDIAN_STATES, type CustomerInput } from "@/lib/checkout-schema";
 import { shippingFor } from "@/lib/pricing";
@@ -33,6 +34,8 @@ export function CheckoutClient() {
   const [details, setDetails] = useState<CustomerInput>(emptyDetails);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<Status>("idle");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstile = useRef<TurnstileHandle>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   // Remember shipping details on this device so repeat customers don't retype them.
@@ -75,17 +78,28 @@ export function CheckoutClient() {
       localStorage.setItem(DETAILS_KEY, JSON.stringify(customer));
     } catch {}
 
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setMessage("Please wait a moment for the security check above the Pay button to finish, then try again.");
+      return;
+    }
+
     setStatus("creating");
     try {
       const [res] = await Promise.all([
         fetch("/api/checkout/order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ customer, items: lines.map((l) => ({ slug: l.slug, qty: l.qty })) }),
+          body: JSON.stringify({
+            customer,
+            items: lines.map((l) => ({ slug: l.slug, qty: l.qty })),
+            turnstileToken: turnstileToken || undefined,
+          }),
         }),
         loadRazorpay(),
       ]);
       const order = await res.json();
+      // Turnstile tokens are single-use: get a fresh one for any retry.
+      turnstile.current?.reset();
       if (!res.ok) {
         if (order.fields) setErrors(order.fields);
         throw new Error(order.error ?? "We couldn't start the payment.");
@@ -120,6 +134,7 @@ export function CheckoutClient() {
       );
     } catch (err) {
       setStatus("idle");
+      turnstile.current?.reset();
       setMessage(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     }
   }
@@ -265,6 +280,8 @@ export function CheckoutClient() {
                 </div>
                 <p className="text-sm text-ink/70">Inclusive of all taxes</p>
               </dl>
+
+              <Turnstile ref={turnstile} action="checkout" onToken={setTurnstileToken} />
 
               {message && (
                 <p role="alert" className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">

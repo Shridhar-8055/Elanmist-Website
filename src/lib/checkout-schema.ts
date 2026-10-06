@@ -43,6 +43,8 @@ export const createOrderSchema = z.object({
     )
     .min(1, "Your cart is empty")
     .max(20),
+  // Cloudflare Turnstile token; required on the server once Turnstile is configured.
+  turnstileToken: z.string().max(4096).optional(),
 });
 
 export const verifyPaymentSchema = z.object({

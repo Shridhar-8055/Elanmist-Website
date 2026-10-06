@@ -4,6 +4,7 @@ import { createOrderSchema, fieldErrors } from "@/lib/checkout-schema";
 import { priceCart, PricingError, type OrderTotals } from "@/lib/pricing";
 import { createOrder, publicKeyId, RazorpayApiError, RazorpayConfigError, toPaise } from "@/lib/razorpay";
 import { recordOrder, type SheetStatus } from "@/lib/sheets";
+import { clientIp, verifyTurnstile } from "@/lib/turnstile";
 
 // Creates a Razorpay order for the cart. The amount is always computed here from
 // the catalogue — the browser only tells us which products and how many.
@@ -23,7 +24,17 @@ export async function POST(request: Request) {
       { status: 422 },
     );
   }
-  const { customer, items } = parsed.data;
+  const { customer, items, turnstileToken } = parsed.data;
+
+  // Bot protection: reject before anything reaches Razorpay or the Sheet.
+  const human = await verifyTurnstile(turnstileToken, clientIp(request));
+  if (!human.ok) {
+    console.warn("[checkout/order] turnstile rejected", { reason: human.reason });
+    return Response.json(
+      { error: "Security check failed. Please complete the check above the Pay button and try again." },
+      { status: 403 },
+    );
+  }
 
   let totals: OrderTotals;
   try {

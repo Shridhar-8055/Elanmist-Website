@@ -65,7 +65,7 @@ export default function Home() {
         {products.map((p, i) => (
           <article
             key={p.slug}
-            className="sticky top-0 h-svh min-h-[640px] overflow-hidden rounded-t-[36px] text-white shadow-[0_-20px_60px_rgb(0_0_0/0.25)] md:rounded-t-[48px]"
+            className="sticky top-0 h-svh min-h-[640px] overflow-hidden text-white shadow-[0_-20px_60px_rgb(0_0_0/0.25)]"
             style={{ background: p.backdrop }}
           >
             <div className="mx-auto grid h-full max-w-[1440px] grid-rows-[1fr_auto] md:grid-cols-2 md:grid-rows-1">

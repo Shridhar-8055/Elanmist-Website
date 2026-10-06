@@ -52,9 +52,13 @@ function doPost(e) {
     return json_({ ok: false, error: 'invalid json' });
   }
 
+  // Distinct errors make setup problems obvious in the website's logs.
   var secret = PropertiesService.getScriptProperties().getProperty('SHARED_SECRET');
-  if (!secret || body.secret !== secret) {
-    return json_({ ok: false, error: 'unauthorized' });
+  if (!secret) {
+    return json_({ ok: false, error: 'SHARED_SECRET script property is not set' });
+  }
+  if (body.secret !== secret) {
+    return json_({ ok: false, error: 'unauthorized: secret does not match SHARED_SECRET' });
   }
   if (!body.orderNo) {
     return json_({ ok: false, error: 'missing orderNo' });
@@ -62,18 +66,34 @@ function doPost(e) {
 
   // Serialise writes so two events for the same order can't create duplicate rows.
   var lock = LockService.getScriptLock();
-  lock.waitLock(20000);
   try {
+    lock.waitLock(20000);
     var sheet = getSheet_();
     upsert_(sheet, String(body.orderNo), body.data || {});
-    return json_({ ok: true });
+    return json_({ ok: true, sheet: sheet.getParent().getName() + ' / ' + sheet.getName() });
+  } catch (err) {
+    return json_({ ok: false, error: 'script error: ' + (err && err.message ? err.message : String(err)) });
   } finally {
-    lock.releaseLock();
+    try { lock.releaseLock(); } catch (ignore) {}
   }
 }
 
+// Lets you test the setup from the Apps Script editor: select this function and
+// click Run. It writes a "SETUP CHECK" row (delete it afterwards) and grants the
+// script permission to edit the spreadsheet.
+function testSetup() {
+  var sheet = getSheet_();
+  upsert_(sheet, 'SETUP-CHECK', { status: 'Awaiting payment', name: 'SETUP CHECK - delete me' });
+  Logger.log('OK: wrote a test row to ' + sheet.getParent().getName() + ' / ' + sheet.getName());
+}
+
 function getSheet_() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  // Works when the script is opened from the Sheet (Extensions -> Apps Script).
+  // For a standalone script, add a SHEET_ID script property with the sheet's ID
+  // (the long code in its URL between /d/ and /edit).
+  var sheetId = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
+  var ss = sheetId ? SpreadsheetApp.openById(sheetId) : SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error('No spreadsheet: open Apps Script from the Sheet, or set the SHEET_ID script property');
   var sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(HEADERS);

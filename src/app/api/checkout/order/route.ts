@@ -4,6 +4,7 @@ import { createOrderSchema, fieldErrors } from "@/lib/checkout-schema";
 import { priceCart, PricingError, type OrderTotals } from "@/lib/pricing";
 import { createOrder, publicKeyId, RazorpayApiError, RazorpayConfigError, toPaise } from "@/lib/razorpay";
 import { recordOrder, type SheetStatus } from "@/lib/sheets";
+import { checkServiceability, type Serviceability } from "@/lib/shiprocket";
 import { clientIp, verifyTurnstile } from "@/lib/turnstile";
 
 // Creates a Razorpay order for the cart. The amount is always computed here from
@@ -44,6 +45,23 @@ export async function POST(request: Request) {
     throw error;
   }
 
+  // Block pincodes no courier serves. If Shiprocket is unconfigured or down, let the order through.
+  let service: Serviceability = { configured: false };
+  try {
+    service = await checkServiceability(customer.pincode);
+  } catch (error) {
+    console.error("[checkout/order] serviceability check failed — allowing", String(error));
+  }
+  if (service.configured && !service.serviceable) {
+    return Response.json(
+      {
+        error: "Sorry, we don't deliver to this pincode yet.",
+        fields: { pincode: "We don't deliver to this pincode yet" },
+      },
+      { status: 422 },
+    );
+  }
+
   const receipt = `EM-${Date.now().toString(36).toUpperCase()}-${randomUUID().slice(0, 6).toUpperCase()}`;
   const itemsText = totals.lines.map((l) => `${l.name} x${l.qty}`).join("; ");
 
@@ -82,8 +100,12 @@ export async function POST(request: Request) {
         customer_phone: customer.phone,
         address_line1: clip(customer.address1),
         address_line2: clip(customer.address2),
-        city_state_pin: clip(`${customer.city}, ${customer.state} ${customer.pincode}`),
+        city: clip(customer.city),
+        state: customer.state,
+        pincode: customer.pincode,
         items: clip(itemsText),
+        // Machine-readable cart ("slug:qty,…") used to create the Shiprocket shipment once paid.
+        cart: clip(totals.lines.map((l) => `${l.slug}:${l.qty}`).join(",")),
         subtotal: String(totals.subtotal),
         shipping: String(totals.shipping),
         total: String(totals.total),

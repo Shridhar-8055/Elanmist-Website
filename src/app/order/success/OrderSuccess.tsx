@@ -105,6 +105,14 @@ export function OrderSuccess() {
           </a>
           .
         </p>
+        {order && (
+          <Link
+            href={`/track?order=${encodeURIComponent(order.receipt)}`}
+            className="mr-3 mt-8 inline-flex h-12 items-center gap-2 rounded-full border-2 border-ink px-7 text-base font-semibold"
+          >
+            <TruckIcon className="size-5" /> Track your order
+          </Link>
+        )}
         <Link href="/shop" className="pill-dark mt-8 inline-flex h-12 items-center rounded-full px-7 text-base font-semibold">
           Continue shopping
         </Link>

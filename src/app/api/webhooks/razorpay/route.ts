@@ -1,5 +1,6 @@
 import { after } from "next/server";
 import { RazorpayConfigError, verifyWebhookSignature } from "@/lib/razorpay";
+import { fulfilPaidOrder } from "@/lib/fulfilment";
 import { recordOrder } from "@/lib/sheets";
 
 // Razorpay webhook endpoint. Configure in Dashboard → Settings → Webhooks:
@@ -15,7 +16,7 @@ type WebhookEvent = {
   created_at: number;
   payload: {
     payment?: { entity: { id: string; order_id: string; amount: number; status: string; method: string; email?: string; contact?: string; error_description?: string | null; notes?: Record<string, string> } };
-    order?: { entity: { id: string; receipt: string; amount: number; status: string; notes?: Record<string, string> } };
+    order?: { entity: { id: string; receipt: string; amount: number; status: string; created_at?: number; notes?: Record<string, string> } };
     refund?: { entity: { id: string; payment_id: string; amount: number; status: string } };
   };
 };
@@ -55,7 +56,12 @@ export async function POST(request: Request) {
   switch (event.event) {
     case "payment.captured":
     case "order.paid":
-      // TODO(phase 2): notify the team (e.g. email support@elanmist.com) so it can be packed and shipped.
+      // order.paid fires once per order and carries the checkout notes (address + cart),
+      // so it's the trigger for creating the shipment in Shiprocket.
+      if (event.event === "order.paid" && order) {
+        const paidOrder = order;
+        after(() => fulfilPaidOrder(paidOrder));
+      }
       if (orderNo) {
         after(() =>
           recordOrder(orderNo, {

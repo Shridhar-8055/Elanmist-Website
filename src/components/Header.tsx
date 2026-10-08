@@ -33,7 +33,7 @@ const mobileLinks = [
   { href: "/skin-quiz", label: "Skin Quiz", Icon: SparkIcon },
   { href: "/our-vision", label: "Our Vision", Icon: LeafIcon },
   { href: "/contact", label: "Contact", Icon: ChatIcon },
-  { href: "/contact#track", label: "Track Order", Icon: TruckIcon },
+  { href: "/track", label: "Track Order", Icon: TruckIcon },
   { href: "/policies/shipping-and-returns", label: "Shipping", Icon: DocIcon },
 ];
 
@@ -76,7 +76,7 @@ export function Header() {
   // Pages that open on a dark, full-bleed visual get a light logo until scrolled.
   const darkTop = pathname === "/";
   const light = darkTop && !scrolled && !menuOpen;
-  const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href.split("#")[0]) && href !== "/contact#track");
+  const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href.split("#")[0]));
 
   return (
     <header

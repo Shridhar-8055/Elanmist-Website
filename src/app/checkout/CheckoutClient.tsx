@@ -51,6 +51,37 @@ export function CheckoutClient() {
   const total = subtotal + shipping;
   const busy = status !== "idle";
 
+  // Live delivery check for the pincode (Shiprocket). Silent if not configured or unavailable.
+  const [delivery, setDelivery] = useState<{ pincode: string; text: string; ok: boolean } | null>(null);
+  useEffect(() => {
+    const pin = details.pincode.trim();
+    if (!/^[1-9]\d{5}$/.test(pin)) return;
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/shipping/check?pincode=${pin}`, { signal: ctrl.signal });
+        const data = await res.json();
+        if (!data.configured) return setDelivery(null);
+        if (!data.serviceable) {
+          return setDelivery({ pincode: pin, ok: false, text: "Sorry, we don't deliver to this pincode yet" });
+        }
+        const when = data.etd
+          ? new Date(data.etd).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })
+          : null;
+        setDelivery({
+          pincode: pin,
+          ok: true,
+          text: when ? `✓ Delivers here — expected by ${when}` : `✓ Delivers here${data.days ? ` in about ${data.days} days` : ""}`,
+        });
+      } catch {}
+    }, 400);
+    return () => {
+      clearTimeout(t);
+      ctrl.abort();
+    };
+  }, [details.pincode]);
+  const deliveryNote = delivery && delivery.pincode === details.pincode.trim() ? delivery : null;
+
   const update = (key: keyof CustomerInput) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setDetails((d) => ({ ...d, [key]: e.target.value }));
     if (errors[key]) {
@@ -214,7 +245,7 @@ export function CheckoutClient() {
                 <Field id="address1" label="House no., building, street" autoComplete="address-line1" value={details.address1} onChange={update("address1")} error={errors.address1} className="sm:col-span-2" />
                 <Field id="address2" label="Area, landmark (optional)" autoComplete="address-line2" value={details.address2 ?? ""} onChange={update("address2")} error={errors.address2} className="sm:col-span-2" />
                 <Field id="city" label="City" autoComplete="address-level2" value={details.city} onChange={update("city")} error={errors.city} />
-                <Field id="pincode" label="Pincode" inputMode="numeric" maxLength={6} autoComplete="postal-code" value={details.pincode} onChange={update("pincode")} error={errors.pincode} />
+                <Field id="pincode" label="Pincode" inputMode="numeric" maxLength={6} autoComplete="postal-code" value={details.pincode} onChange={update("pincode")} error={errors.pincode ?? (deliveryNote && !deliveryNote.ok ? deliveryNote.text : undefined)} hint={deliveryNote?.ok ? deliveryNote.text : undefined} />
                 <div className="sm:col-span-2">
                   <label htmlFor="field-state" className="mb-1.5 block text-sm font-semibold">
                     State

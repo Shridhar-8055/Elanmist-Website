@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { Faq } from "@/components/Faq";
 import { HeadsetIcon, InstagramIcon, TruckIcon } from "@/components/icons";
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE, shippingInfo } from "@/lib/products";
@@ -56,15 +57,14 @@ export default function ContactPage() {
               <h2 className="mt-4 px-4 text-xl font-bold">@elanmist</h2>
               <p className="mt-2 px-4 text-sm text-mist">DM us for quick questions.</p>
             </a>
-            <div id="track" className="group rounded-[28px] bg-pale p-2.5 pb-7">
+            <Link id="track" href="/track" className="group rounded-[28px] bg-pale p-2.5 pb-7 transition-transform hover:-translate-y-1">
               <div className="relative aspect-[16/10] overflow-hidden rounded-[20px]">
                 <Image src="/images/shoot/trio-group.webp" alt={altFor("/images/shoot/trio-group.webp")} fill sizes="(min-width: 768px) 33vw, 100vw" className="bg-white object-contain p-3 transition-transform duration-[1200ms] ease-out group-hover:scale-105" style={{ objectPosition: "50% 55%" }} />
               </div>
               <TruckIcon className="mx-4 mt-6 size-7" />
               <h2 className="mt-4 px-4 text-xl font-bold">Track your order</h2>
-              {/* TODO: link to the client's shipping partner tracking page. */}
-              <p className="mt-2 px-4 text-sm text-mist">Tracking details are sent by SMS and email once your order ships.</p>
-            </div>
+              <p className="mt-2 px-4 text-sm text-mist">Enter your order number and mobile to see live delivery status.</p>
+            </Link>
           </div>
         </div>
       </section>

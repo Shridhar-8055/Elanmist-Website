@@ -27,6 +27,12 @@ export type SheetRow = Partial<{
   paymentId: string;
   method: string;
   notes: string;
+  // Delivery (Shiprocket)
+  shipmentStatus: string;
+  courier: string;
+  awb: string;
+  trackingUrl: string;
+  shiprocketOrderId: string;
 }>;
 
 export async function recordOrder(orderNo: string, data: SheetRow) {

@@ -18,6 +18,8 @@ var HEADERS = [
   'Address line 1', 'Address line 2', 'City', 'State', 'Pincode',
   'Items', 'Subtotal (₹)', 'Delivery (₹)', 'Total (₹)',
   'Razorpay Order ID', 'Payment ID', 'Payment method', 'Notes',
+  // Delivery columns (added later — appended so existing sheets stay aligned).
+  'Shipment status', 'Courier', 'AWB', 'Tracking link', 'Shiprocket Order ID',
 ];
 
 // Map from the JSON keys the website sends to the column headers above.
@@ -39,6 +41,11 @@ var FIELD_TO_HEADER = {
   paymentId: 'Payment ID',
   method: 'Payment method',
   notes: 'Notes',
+  shipmentStatus: 'Shipment status',
+  courier: 'Courier',
+  awb: 'AWB',
+  trackingUrl: 'Tracking link',
+  shiprocketOrderId: 'Shiprocket Order ID',
 };
 
 // A "Paid" row must never be downgraded by a late or retried event.
@@ -99,6 +106,11 @@ function getSheet_() {
     sheet.appendRow(HEADERS);
     sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold');
     sheet.setFrozenRows(1);
+  } else if (sheet.getLastColumn() < HEADERS.length) {
+    // Older sheet: add any new header columns on the right, keeping existing data in place.
+    var headerRange = sheet.getRange(1, 1, 1, HEADERS.length);
+    headerRange.setValues([HEADERS]);
+    headerRange.setFontWeight('bold');
   }
   return sheet;
 }

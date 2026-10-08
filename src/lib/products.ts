@@ -233,6 +233,14 @@ export const shippingInfo = {
   support: { email: "support@elanmist.com", phone: "9353276878" },
 };
 
+// Packed size of one unit, sent to Shiprocket for courier pricing.
+// CONFIRM: placeholders for a 50 g tube/jar in its carton — weigh and measure the real packed parcel.
+export const packaging: Record<string, { sku: string; weightKg: number; lengthCm: number; breadthCm: number; heightCm: number }> = {
+  "hybrid-sunscreen": { sku: "EM-SUN-50", weightKg: 0.12, lengthCm: 17, breadthCm: 5, heightCm: 4 },
+  "glutathione-cream": { sku: "EM-GLU-50", weightKg: 0.12, lengthCm: 17, breadthCm: 5, heightCm: 4 },
+  "hydroboost-gel": { sku: "EM-HYD-50", weightKg: 0.15, lengthCm: 8, breadthCm: 8, heightCm: 6 },
+};
+
 export const inr = (n: number) =>
   "₹" + n.toLocaleString("en-IN", { maximumFractionDigits: 0 });
 

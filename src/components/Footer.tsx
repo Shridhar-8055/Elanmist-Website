@@ -24,7 +24,7 @@ const columns = [
     links: [
       { href: "/contact#faqs", label: "FAQs" },
       { href: "/contact#callback", label: "Request a callback" },
-      { href: "/contact#track", label: "Track your order" },
+      { href: "/track", label: "Track your order" },
     ],
   },
   {

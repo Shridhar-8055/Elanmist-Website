@@ -40,7 +40,7 @@ const founders = [
     bio: "Started Elanmist to make honest, science-guided skincare that people can trust every day.",
   },
   {
-    name: "Co-Founder Name",
+    name: "Kiran BR",
     role: "Co-Founder",
     image: "/images/team/co-founder.webp",
     bio: "Leads operations and growth, bringing Elanmist's formulas to more people across India.",

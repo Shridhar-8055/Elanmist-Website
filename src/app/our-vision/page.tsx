@@ -31,6 +31,22 @@ const chapters = [
   },
 ];
 
+// CONFIRM: names and short bios with the client.
+const founders = [
+  {
+    name: "Founder Name",
+    role: "Founder",
+    image: "/images/team/founder.webp",
+    bio: "Started Elanmist to make honest, science-guided skincare that people can trust every day.",
+  },
+  {
+    name: "Co-Founder Name",
+    role: "Co-Founder",
+    image: "/images/team/co-founder.webp",
+    bio: "Leads operations and growth, bringing Elanmist's formulas to more people across India.",
+  },
+];
+
 const agenda = [
   ["Accessible Luxury", "Premium formulations at honest prices.", "/images/shoot/sunscreen-tube-front.webp"],
   ["Transparent Ingredients", "Clear communication about what goes in, and why.", "/images/shoot/sunscreen-tube-box.webp"],
@@ -80,6 +96,44 @@ export default function VisionPage() {
               </article>
             </Reveal>
           ))}
+        </div>
+      </section>
+
+      <section className="bg-pale px-4 py-20 md:py-28">
+        <div className="mx-auto max-w-[1280px]">
+          <div className="grid gap-6 md:grid-cols-[1fr_1.4fr] md:items-end">
+            <div>
+              <p className="font-serif text-2xl italic text-mist">The people behind Elanmist</p>
+              <h2 className="display mt-3 text-[clamp(40px,6vw,88px)] leading-[0.98]">Our Founders</h2>
+            </div>
+            <p className="max-w-md text-[15px] leading-relaxed text-mist md:justify-self-end">
+              A small team with one belief: skincare should be honest about what it does, and made to be used every day.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:mx-auto lg:max-w-[960px]">
+            {founders.map((f, i) => (
+              <Reveal key={f.role} delay={i * 120}>
+                <figure className="group h-full overflow-hidden rounded-[32px] bg-white">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-ink">
+                    <Image
+                      src={f.image}
+                      alt={`${f.name}, ${f.role} of Elanmist`}
+                      fill
+                      sizes="(min-width: 1024px) 480px, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover object-top transition-transform duration-[1200ms] ease-out group-hover:scale-105"
+                    />
+                    <p className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-ink backdrop-blur">
+                      {f.role}
+                    </p>
+                  </div>
+                  <figcaption className="p-7">
+                    <h3 className="text-[26px] font-bold leading-tight tracking-tight">{f.name}</h3>
+                    <p className="mt-3 text-[15px] leading-relaxed text-mist">{f.bio}</p>
+                  </figcaption>
+                </figure>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 

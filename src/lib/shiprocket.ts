@@ -246,6 +246,26 @@ type TrackResp = {
   };
 };
 
+/**
+ * Compares the shopper's phone with the one on the order. Shiprocket may mask
+ * personal data in API replies (e.g. "98XXXXXX10") unless the caller's IP is
+ * allow-listed, which Vercel can't guarantee — so only the digits Shiprocket
+ * shows are compared, and at least 4 of them must be visible.
+ */
+export function phoneMatches(onOrder: string | undefined, given: string) {
+  const want = given.replace(/\D/g, "").slice(-10);
+  const shown = (onOrder ?? "").replace(/[\s\-+()]/g, "").slice(-10);
+  if (want.length !== 10 || shown.length !== 10) return false;
+  let visible = 0;
+  for (let i = 0; i < 10; i++) {
+    if (/\d/.test(shown[i])) {
+      if (shown[i] !== want[i]) return false;
+      visible++;
+    }
+  }
+  return visible >= 4;
+}
+
 export const publicTrackUrl = (awb: string) => `https://shiprocket.co/tracking/${encodeURIComponent(awb)}`;
 
 /** Tracking for the /track page. Requires the phone number on the order to match. */
@@ -253,8 +273,7 @@ export async function trackOrder(orderNo: string, phone: string): Promise<Tracki
   const order = await findOrder(orderNo);
   if (!order) return { stage: "not_found", status: "Order not found", events: [] };
 
-  const last10 = (s?: string) => (s ?? "").replace(/\D/g, "").slice(-10);
-  if (!order.customer_phone || last10(order.customer_phone) !== last10(phone)) return "phone_mismatch";
+  if (!phoneMatches(order.customer_phone, phone)) return "phone_mismatch";
 
   const shipment = order.shipments?.find((s) => s.awb) ?? order.shipments?.[0];
   if (!shipment?.awb) {

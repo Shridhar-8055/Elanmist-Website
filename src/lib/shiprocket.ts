@@ -154,6 +154,32 @@ export async function findOrder(orderNo: string) {
   return body.data?.find((o) => o.channel_order_id === orderNo) ?? null;
 }
 
+type PickupRow = { pickup_location: string; is_primary_location?: number; pin_code?: string | number };
+let cachedPickup: { name: string; at: number } | null = null;
+
+/**
+ * Shiprocket needs the pickup address nickname exactly as saved in the panel.
+ * Look it up rather than trusting the env var verbatim (stray spaces, quotes or
+ * different capitalisation all cause "Wrong Pickup location entered").
+ */
+async function resolvePickupLocation() {
+  if (cachedPickup && Date.now() - cachedPickup.at < 60 * 60 * 1000) return cachedPickup.name;
+  const wanted = (process.env.SHIPROCKET_PICKUP_LOCATION ?? "").trim().replace(/^["']|["']$/g, "").trim().toLowerCase();
+  const body = await call<{ data?: { shipping_address?: PickupRow[] } }>("/settings/company/pickup");
+  const rows = body.data?.shipping_address ?? [];
+  const match =
+    rows.find((r) => r.pickup_location.trim().toLowerCase() === wanted) ??
+    rows.find((r) => r.is_primary_location === 1) ??
+    (rows.length === 1 ? rows[0] : undefined);
+  if (!match) {
+    throw new ShiprocketConfigError(
+      `No matching pickup location for "${wanted}". Shiprocket has: ${rows.map((r) => r.pickup_location).join(", ") || "none"}`,
+    );
+  }
+  cachedPickup = { name: match.pickup_location, at: Date.now() };
+  return match.pickup_location;
+}
+
 const pad = (n: number) => String(n).padStart(2, "0");
 function istTimestamp(d: Date) {
   // Shiprocket expects local Indian time as "YYYY-MM-DD HH:mm".
@@ -170,8 +196,7 @@ export async function createShipment(input: ShipmentInput) {
   const existing = await findOrder(input.orderNo);
   if (existing) return { created: false, shiprocketOrderId: existing.id, shipmentId: existing.shipments?.[0]?.id ?? null };
 
-  const pickupLocation = process.env.SHIPROCKET_PICKUP_LOCATION;
-  if (!pickupLocation) throw new ShiprocketConfigError("SHIPROCKET_PICKUP_LOCATION is not set.");
+  const pickupLocation = await resolvePickupLocation();
 
   const lines = input.items.map(({ slug, qty }) => {
     const product = getProduct(slug);
@@ -223,7 +248,11 @@ export async function createShipment(input: ShipmentInput) {
   });
   // Shiprocket sometimes answers 200 with only a message (e.g. a bad pickup location).
   if (!body.order_id) {
-    throw new ShiprocketApiError(`Shiprocket did not create the order: ${body.message ?? JSON.stringify(body).slice(0, 180)}`, 200);
+    if (/pickup/i.test(body.message ?? "")) cachedPickup = null;
+    throw new ShiprocketApiError(
+      `Shiprocket did not create the order (pickup "${pickupLocation}"): ${body.message ?? JSON.stringify(body).slice(0, 160)}`,
+      200,
+    );
   }
   return { created: true, shiprocketOrderId: body.order_id, shipmentId: body.shipment_id ?? null };
 }

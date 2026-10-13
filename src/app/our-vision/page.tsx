@@ -31,19 +31,38 @@ const chapters = [
   },
 ];
 
-// CONFIRM: names and short bios with the client.
+// CONFIRM: founder name, quotes and the ingredient promises with the client.
 const founders = [
   {
     name: "Founder Name",
     role: "Founder",
     image: "/images/team/founder.webp",
-    bio: "Started Elanmist to make honest, science-guided skincare that people can trust every day.",
+    quote: "I wanted skincare I could explain to my own family — what's inside, and why it's there.",
   },
   {
     name: "Kiran BR",
     role: "Co-Founder",
     image: "/images/team/co-founder.webp",
-    bio: "Leads operations and growth, bringing Elanmist's formulas to more people across India.",
+    quote: "Good formulas deserve honest prices, and careful delivery to every corner of India.",
+  },
+];
+
+const promises = [
+  {
+    title: "Pharmaceutical-grade actives",
+    body: "Every ingredient comes from certified suppliers, with its certificate of analysis checked before it enters production.",
+  },
+  {
+    title: "Used fresh, never stockpiled",
+    body: "Raw materials are used well within their shelf life, so each active is at full strength when it reaches your skin.",
+  },
+  {
+    title: "Small batches, each one tested",
+    body: "We make in small runs and check every batch for stability and safety before it is packed.",
+  },
+  {
+    title: "Only what earns its place",
+    body: "No unnecessary fillers or harsh additives. If an ingredient doesn't help your skin, it isn't in the tube.",
   },
 ];
 
@@ -99,40 +118,64 @@ export default function VisionPage() {
         </div>
       </section>
 
-      <section className="bg-pale px-4 py-20 md:py-28">
-        <div className="mx-auto max-w-[1280px]">
-          <div className="grid gap-6 md:grid-cols-[1fr_1.4fr] md:items-end">
-            <div>
-              <p className="font-serif text-2xl italic text-mist">The people behind Elanmist</p>
-              <h2 className="display mt-3 text-[clamp(40px,6vw,88px)] leading-[0.98]">Our Founders</h2>
-            </div>
-            <p className="max-w-md text-[15px] leading-relaxed text-mist md:justify-self-end">
-              A small team with one belief: skincare should be honest about what it does, and made to be used every day.
+      {/* Founders: arch portraits beside the ingredient promise they sign off on. */}
+      <section className="relative overflow-hidden bg-wine px-4 py-20 text-white md:py-28">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -left-40 top-1/3 size-[520px] rounded-full bg-[#e8a6b3] opacity-[0.07] blur-3xl"
+        />
+        {/* Mobile: heading, portraits, promises. Desktop: portraits left, text right. */}
+        <div className="relative mx-auto grid max-w-[1280px] gap-12 lg:grid-cols-[1.05fr_1fr] lg:grid-rows-[auto_1fr] lg:gap-x-20 lg:gap-y-0">
+          <div className="lg:col-start-2">
+            <p className="font-serif text-2xl italic text-[#e8a6b3]">The people behind every batch</p>
+            <h2 className="display mt-3 text-[clamp(40px,5.4vw,80px)] leading-[0.98]">Our Founders</h2>
+            <p className="mt-6 max-w-lg text-[15px] leading-relaxed text-white/80 md:text-base">
+              Elanmist began with a simple frustration: skincare that promised a lot and explained very little. So we
+              built the brand we wanted to use ourselves, and we still sign off on every batch before it leaves.
             </p>
           </div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:mx-auto lg:max-w-[960px]">
-            {founders.map((f, i) => (
-              <Reveal key={f.role} delay={i * 120}>
-                <figure className="group h-full overflow-hidden rounded-[32px] bg-white">
-                  <div className="relative aspect-[4/5] overflow-hidden bg-ink">
-                    <Image
-                      src={f.image}
-                      alt={`${f.name}, ${f.role} of Elanmist`}
-                      fill
-                      sizes="(min-width: 1024px) 480px, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover object-top transition-transform duration-[1200ms] ease-out group-hover:scale-105"
-                    />
-                    <p className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-ink backdrop-blur">
-                      {f.role}
-                    </p>
-                  </div>
-                  <figcaption className="p-7">
-                    <h3 className="text-[26px] font-bold leading-tight tracking-tight">{f.name}</h3>
-                    <p className="mt-3 text-[15px] leading-relaxed text-mist">{f.bio}</p>
-                  </figcaption>
-                </figure>
-              </Reveal>
-            ))}
+
+          <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1">
+            <div className="grid grid-cols-2 gap-4 md:gap-6">
+              {founders.map((f, i) => (
+                <Reveal key={f.role} delay={i * 140} className={i === 1 ? "mt-16 md:mt-24" : ""}>
+                  <figure className="group">
+                    <div className="relative aspect-[3/4] overflow-hidden rounded-t-full bg-ink ring-1 ring-white/15">
+                      <Image
+                        src={f.image}
+                        alt={`${f.name}, ${f.role} of Elanmist`}
+                        fill
+                        sizes="(min-width: 1024px) 300px, 50vw"
+                        className="object-cover object-top grayscale-[35%] transition-[transform,filter] duration-[1200ms] ease-out group-hover:scale-[1.04] group-hover:grayscale-0"
+                      />
+                    </div>
+                    <figcaption className="mt-5">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#e8a6b3]">{f.role}</p>
+                      <h3 className="mt-1.5 text-xl font-bold tracking-tight md:text-2xl">{f.name}</h3>
+                      <blockquote className="mt-3 border-l border-white/25 pl-3 font-serif text-[15px] italic leading-snug text-white/80 md:text-lg">
+                        “{f.quote}”
+                      </blockquote>
+                    </figcaption>
+                  </figure>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:col-start-2 lg:pt-10">
+            <ol className="border-t border-white/15">
+              {promises.map((p, i) => (
+                <li key={p.title} className="border-b border-white/15">
+                  <Reveal delay={i * 90} className="grid grid-cols-[44px_1fr] gap-3 py-5">
+                    <span className="font-serif text-xl italic text-white/50">0{i + 1}</span>
+                    <span>
+                      <span className="block text-[17px] font-semibold">{p.title}</span>
+                      <span className="mt-1 block text-sm leading-relaxed text-white/75">{p.body}</span>
+                    </span>
+                  </Reveal>
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
       </section>

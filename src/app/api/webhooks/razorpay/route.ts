@@ -58,9 +58,15 @@ export async function POST(request: Request) {
     case "order.paid":
       // order.paid fires once per order and carries the checkout notes (address + cart),
       // so it's the trigger for creating the shipment in Shiprocket.
+      // The checkout verify step usually gets there first; waiting lets its order land in
+      // Shiprocket so this run finds it instead of creating a duplicate. If the shopper
+      // closed the tab before verifying, this is what creates the shipment.
       if (event.event === "order.paid" && order) {
         const paidOrder = order;
-        after(() => fulfilPaidOrder(paidOrder));
+        after(async () => {
+          await new Promise((r) => setTimeout(r, 20_000));
+          await fulfilPaidOrder(paidOrder);
+        });
       }
       if (orderNo) {
         after(() =>

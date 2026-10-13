@@ -246,34 +246,17 @@ type TrackResp = {
   };
 };
 
-/**
- * Compares the shopper's phone with the one on the order. Shiprocket may mask
- * personal data in API replies (e.g. "98XXXXXX10") unless the caller's IP is
- * allow-listed, which Vercel can't guarantee — so only the digits Shiprocket
- * shows are compared, and at least 4 of them must be visible.
- */
-export function phoneMatches(onOrder: string | undefined, given: string) {
-  const want = given.replace(/\D/g, "").slice(-10);
-  const shown = (onOrder ?? "").replace(/[\s\-+()]/g, "").slice(-10);
-  if (want.length !== 10 || shown.length !== 10) return false;
-  let visible = 0;
-  for (let i = 0; i < 10; i++) {
-    if (/\d/.test(shown[i])) {
-      if (shown[i] !== want[i]) return false;
-      visible++;
-    }
-  }
-  return visible >= 4;
-}
-
 export const publicTrackUrl = (awb: string) => `https://shiprocket.co/tracking/${encodeURIComponent(awb)}`;
 
-/** Tracking for the /track page. Requires the phone number on the order to match. */
-export async function trackOrder(orderNo: string, phone: string): Promise<Tracking | "phone_mismatch"> {
+/**
+ * Delivery status for the /track page. The caller must already have checked that
+ * the order is paid and the phone matches (via Razorpay — Shiprocket may mask
+ * phone numbers in its API replies).
+ */
+export async function trackOrder(orderNo: string): Promise<Tracking> {
   const order = await findOrder(orderNo);
-  if (!order) return { stage: "not_found", status: "Order not found", events: [] };
-
-  if (!phoneMatches(order.customer_phone, phone)) return "phone_mismatch";
+  // Paid but not in Shiprocket yet (or created by hand under another number).
+  if (!order) return { stage: "processing", status: "Order confirmed — preparing for dispatch", events: [] };
 
   const shipment = order.shipments?.find((s) => s.awb) ?? order.shipments?.[0];
   if (!shipment?.awb) {

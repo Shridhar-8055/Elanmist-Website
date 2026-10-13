@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { findPaidOrderByReceipt } from "@/lib/razorpay";
 import { shiprocketConfigured, trackOrder } from "@/lib/shiprocket";
 
 const schema = z.object({
@@ -33,15 +34,17 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await trackOrder(parsed.data.orderNo, parsed.data.phone);
+    // The paid Razorpay order is the source of truth for who placed it.
+    const paid = await findPaidOrderByReceipt(parsed.data.orderNo);
+    const phoneOnOrder = (paid?.notes?.customer_phone ?? "").replace(/\D/g, "").slice(-10);
     // Same message for wrong phone and unknown order, so the form can't be used to probe order numbers.
-    if (result === "phone_mismatch" || result.stage === "not_found") {
+    if (!paid || phoneOnOrder !== parsed.data.phone) {
       return Response.json(
         { error: "We couldn't find an order with that number and mobile. Check both and try again." },
         { status: 404 },
       );
     }
-    return Response.json(result);
+    return Response.json(await trackOrder(parsed.data.orderNo));
   } catch (error) {
     console.error("[track]", String(error));
     return Response.json({ error: "Tracking is temporarily unavailable. Please try again shortly." }, { status: 502 });

@@ -7,9 +7,24 @@ import { createShipment, ShiprocketConfigError, shiprocketConfigured } from "./s
  * order's notes at checkout. Safe to call more than once for the same order.
  * Never throws: problems are logged and noted in the orders sheet.
  */
-export async function fulfilPaidOrder(order: { receipt: string; created_at?: number; notes?: Record<string, string> }) {
+type PaidOrder = { receipt: string; created_at?: number; notes?: Record<string, string> };
+
+// Both the checkout verify step and the Razorpay webhook trigger fulfilment; share
+// one run per order on this server instance so they don't race to create it twice.
+const inFlight = new Map<string, Promise<void>>();
+
+export function fulfilPaidOrder(order: PaidOrder) {
+  const running = inFlight.get(order.receipt);
+  if (running) return running;
+  const run = fulfil(order).finally(() => inFlight.delete(order.receipt));
+  inFlight.set(order.receipt, run);
+  return run;
+}
+
+async function fulfil(order: PaidOrder) {
   if (!shiprocketConfigured()) {
     console.warn("[fulfilment] Shiprocket not configured — skipping shipment", { orderNo: order.receipt });
+    await recordOrder(order.receipt, { shipmentStatus: "Setup incomplete", notes: "Shiprocket API user not set in Vercel" });
     return;
   }
   const n = order.notes ?? {};

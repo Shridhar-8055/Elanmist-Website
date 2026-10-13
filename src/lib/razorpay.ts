@@ -14,6 +14,7 @@ export type RazorpayOrder = {
   receipt: string;
   status: "created" | "attempted" | "paid";
   notes: Record<string, string>;
+  created_at?: number;
 };
 
 export type RazorpayPayment = {
@@ -88,6 +89,12 @@ export function createOrder(input: {
 
 export const fetchOrder = (orderId: string) => call<RazorpayOrder>(`/orders/${encodeURIComponent(orderId)}`);
 export const fetchPayment = (paymentId: string) => call<RazorpayPayment>(`/payments/${encodeURIComponent(paymentId)}`);
+
+/** Finds the paid order for one of our order numbers (EM-…), which we send as the receipt. */
+export async function findPaidOrderByReceipt(receipt: string) {
+  const body = await call<{ items?: RazorpayOrder[] }>(`/orders?receipt=${encodeURIComponent(receipt)}&count=10`);
+  return body.items?.find((o) => o.receipt === receipt && o.status === "paid") ?? null;
+}
 
 function safeEqualHex(expected: string, received: string) {
   const a = Buffer.from(expected, "hex");

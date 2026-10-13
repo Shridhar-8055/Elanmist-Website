@@ -29,10 +29,16 @@ function tokenMatches(received: string | null) {
 
 const titleCase = (s: string) => s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 
+// Shiprocket checks the URL when the webhook is saved, sometimes without the token.
+// Unauthenticated requests get a 200 but are never acted on.
+export function GET() {
+  return new Response("OK", { status: 200 });
+}
+
 export async function POST(request: Request) {
   if (!tokenMatches(request.headers.get("x-api-key"))) {
-    console.warn("[webhook/delivery] rejected: missing or wrong x-api-key");
-    return new Response("Unauthorized", { status: 401 });
+    console.warn("[webhook/delivery] ignored: missing or wrong x-api-key");
+    return new Response("OK", { status: 200 });
   }
 
   let event: ShiprocketEvent;

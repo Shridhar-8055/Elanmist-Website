@@ -189,7 +189,7 @@ export async function createShipment(input: ShipmentInput) {
   const [first, ...rest] = input.customer.name.trim().split(/\s+/);
   const c = input.customer;
 
-  const body = await call<{ order_id: number; shipment_id: number; status: string }>("/orders/create/adhoc", {
+  const body = await call<{ order_id?: number; shipment_id?: number; status?: string; message?: string }>("/orders/create/adhoc", {
     method: "POST",
     body: JSON.stringify({
       order_id: input.orderNo,
@@ -221,7 +221,11 @@ export async function createShipment(input: ShipmentInput) {
       weight: Math.round(weight * 1000) / 1000,
     }),
   });
-  return { created: true, shiprocketOrderId: body.order_id, shipmentId: body.shipment_id };
+  // Shiprocket sometimes answers 200 with only a message (e.g. a bad pickup location).
+  if (!body.order_id) {
+    throw new ShiprocketApiError(`Shiprocket did not create the order: ${body.message ?? JSON.stringify(body).slice(0, 180)}`, 200);
+  }
+  return { created: true, shiprocketOrderId: body.order_id, shipmentId: body.shipment_id ?? null };
 }
 
 // ─── Tracking ──────────────────────────────────────────────────────────────────

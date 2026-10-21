@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Inter, Inter_Tight, Instrument_Serif, Poppins } from "next/font/google";
+import localFont from "next/font/local";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { CartDrawer } from "@/components/CartDrawer";
 import { Footer } from "@/components/Footer";
@@ -7,22 +7,45 @@ import { Header } from "@/components/Header";
 import { CartProvider } from "@/lib/cart";
 import "./globals.css";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
-const interTight = Inter_Tight({ variable: "--font-inter-tight", subsets: ["latin"], weight: ["700", "800", "900"] });
-const instrument = Instrument_Serif({
+// Fonts are self-hosted from the @fontsource packages (latin subset) so builds never
+// depend on reaching Google Fonts, which has failed Vercel builds before.
+// (next/font needs literal values here, so the paths are written out in full.)
+const inter = localFont({
+  variable: "--font-inter",
+  src: "../../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2",
+  weight: "100 900",
+});
+const interTight = localFont({
+  variable: "--font-inter-tight",
+  src: "../../node_modules/@fontsource-variable/inter-tight/files/inter-tight-latin-wght-normal.woff2",
+  weight: "100 900",
+});
+const instrument = localFont({
   variable: "--font-instrument",
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
+  src: [
+    { path: "../../node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../../node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2", weight: "400", style: "italic" },
+  ],
 });
 // Footer type: fonts already used on the current elanmist.com site.
-const poppins = Poppins({
+const poppins = localFont({
   variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
+  src: [
+    { path: "../../node_modules/@fontsource/poppins/files/poppins-latin-300-normal.woff2", weight: "300", style: "normal" },
+    { path: "../../node_modules/@fontsource/poppins/files/poppins-latin-300-italic.woff2", weight: "300", style: "italic" },
+    { path: "../../node_modules/@fontsource/poppins/files/poppins-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../../node_modules/@fontsource/poppins/files/poppins-latin-400-italic.woff2", weight: "400", style: "italic" },
+    { path: "../../node_modules/@fontsource/poppins/files/poppins-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "../../node_modules/@fontsource/poppins/files/poppins-latin-500-italic.woff2", weight: "500", style: "italic" },
+    { path: "../../node_modules/@fontsource/poppins/files/poppins-latin-600-normal.woff2", weight: "600", style: "normal" },
+    { path: "../../node_modules/@fontsource/poppins/files/poppins-latin-600-italic.woff2", weight: "600", style: "italic" },
+  ],
 });
-const dmSans = DM_Sans({ variable: "--font-dm-sans", subsets: ["latin"] });
+const dmSans = localFont({
+  variable: "--font-dm-sans",
+  src: "../../node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2",
+  weight: "100 1000",
+});
 
 export const metadata: Metadata = {
   title: {

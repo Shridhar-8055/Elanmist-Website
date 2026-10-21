@@ -1,6 +1,8 @@
 import { after } from "next/server";
 import { RazorpayConfigError, verifyWebhookSignature } from "@/lib/razorpay";
+import { sendOrderConfirmation } from "@/lib/email";
 import { fulfilPaidOrder } from "@/lib/fulfilment";
+import { siteUrl } from "@/lib/site";
 import { recordOrder } from "@/lib/sheets";
 
 // Razorpay webhook endpoint. Configure in Dashboard → Settings → Webhooks:
@@ -63,9 +65,10 @@ export async function POST(request: Request) {
       // closed the tab before verifying, this is what creates the shipment.
       if (event.event === "order.paid" && order) {
         const paidOrder = order;
+        const site = siteUrl(request);
         after(async () => {
           await new Promise((r) => setTimeout(r, 20_000));
-          await fulfilPaidOrder(paidOrder);
+          await Promise.all([fulfilPaidOrder(paidOrder), sendOrderConfirmation(paidOrder, site)]);
         });
       }
       if (orderNo) {

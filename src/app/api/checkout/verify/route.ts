@@ -1,6 +1,8 @@
 import { after } from "next/server";
 import { verifyPaymentSchema } from "@/lib/checkout-schema";
+import { sendOrderConfirmation } from "@/lib/email";
 import { fulfilPaidOrder } from "@/lib/fulfilment";
+import { siteUrl } from "@/lib/site";
 import { recordOrder } from "@/lib/sheets";
 import {
   fetchOrder,
@@ -55,8 +57,8 @@ export async function POST(request: Request) {
         paymentId,
         method: payment.method,
       });
-      // Also triggered by the order.paid webhook; createShipment is idempotent.
-      await fulfilPaidOrder(order);
+      // Both also run from the order.paid webhook; each is safe to repeat.
+      await Promise.all([fulfilPaidOrder(order), sendOrderConfirmation(order, siteUrl(request))]);
     });
 
     console.info("[checkout/verify] payment verified", {

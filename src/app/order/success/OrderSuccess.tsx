@@ -71,8 +71,8 @@ export function OrderSuccess() {
               </div>
             </dl>
             <p className="mt-4 text-sm text-ink/70">
-              Razorpay emails your payment receipt to <strong className="text-ink">{order.customer.email}</strong>.
-              Keep your order number handy if you contact us.
+              We&apos;ve emailed your order details and a tracking link to{" "}
+              <strong className="text-ink">{order.customer.email}</strong>. Keep your order number handy if you contact us.
             </p>
           </div>
         )}

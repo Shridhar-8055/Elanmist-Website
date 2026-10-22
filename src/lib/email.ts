@@ -39,7 +39,7 @@ const esc = (s: string) =>
 type PaidOrder = { receipt: string; notes?: Record<string, string> };
 
 /** Order confirmation with the order number and a tracking link. Never throws. */
-export async function sendOrderConfirmation(order: PaidOrder, siteUrl: string) {
+export async function sendOrderConfirmation(order: PaidOrder, siteUrl: string, referralCode?: string | null) {
   if (!emailConfigured()) {
     console.warn("[email] Resend not configured — skipping confirmation", { orderNo: order.receipt });
     return;
@@ -59,8 +59,9 @@ export async function sendOrderConfirmation(order: PaidOrder, siteUrl: string) {
     .map((l) => ({ name: l.product!.name, qty: l.qty, total: l.product!.price * l.qty }));
 
   const subtotal = Number(n.subtotal ?? 0);
+  const discount = Number(n.discount ?? 0);
   const shipping = Number(n.shipping ?? 0);
-  const total = Number(n.total ?? subtotal + shipping);
+  const total = Number(n.total ?? subtotal - discount + shipping);
   const firstName = (n.customer_name ?? "").trim().split(/\s+/)[0] || "there";
   const trackUrl = `${siteUrl.replace(/\/$/, "")}/track?order=${encodeURIComponent(order.receipt)}`;
   const address = [n.address_line1, n.address_line2, `${n.city ?? ""}, ${n.state ?? ""} ${n.pincode ?? ""}`]
@@ -72,7 +73,19 @@ export async function sendOrderConfirmation(order: PaidOrder, siteUrl: string) {
       to,
       subject: `Order confirmed — ${order.receipt}`,
       idempotencyKey: `order-confirmation/${order.receipt}`,
-      html: confirmationHtml({ firstName, orderNo: order.receipt, lines, subtotal, shipping, total, address, trackUrl, name: n.customer_name ?? "" }),
+      html: confirmationHtml({
+        firstName,
+        orderNo: order.receipt,
+        lines,
+        subtotal,
+        discount,
+        shipping,
+        total,
+        address,
+        trackUrl,
+        name: n.customer_name ?? "",
+        referralCode: referralCode ?? null,
+      }),
       text: [
         `Hi ${firstName},`,
         ``,
@@ -80,6 +93,7 @@ export async function sendOrderConfirmation(order: PaidOrder, siteUrl: string) {
         ``,
         `Order number: ${order.receipt}`,
         ...lines.map((l) => `- ${l.name} x${l.qty}: ${inr(l.total)}`),
+        ...(discount ? [`Referral discount (1 product free): -${inr(discount)}`] : []),
         `Delivery: ${shipping ? inr(shipping) : "Free"}`,
         `Total paid: ${inr(total)}`,
         ``,
@@ -89,6 +103,13 @@ export async function sendOrderConfirmation(order: PaidOrder, siteUrl: string) {
         `Track your order any time: ${trackUrl}`,
         `(Use this order number and the mobile number you gave at checkout.)`,
         ``,
+        ...(referralCode
+          ? [
+              `Share the love: give a friend your referral code ${referralCode}.`,
+              `They get one Elanmist product free and pay only delivery. One use only.`,
+              ``,
+            ]
+          : []),
         `Questions? Reply to this email or call +91 ${shippingInfo.support.phone}.`,
         `— Team Elanmist`,
       ].join("\n"),
@@ -106,10 +127,12 @@ function confirmationHtml(d: {
   orderNo: string;
   lines: { name: string; qty: number; total: number }[];
   subtotal: number;
+  discount: number;
   shipping: number;
   total: number;
   address: string[];
   trackUrl: string;
+  referralCode: string | null;
 }) {
   const ink = "#0d0b0b";
   const mist = "#6b635e";
@@ -168,6 +191,7 @@ function confirmationHtml(d: {
           </table>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
             ${row("Subtotal", inr(d.subtotal))}
+            ${d.discount ? row("Referral discount (1 product free)", `&minus;${inr(d.discount)}`) : ""}
             ${row("Delivery", d.shipping ? inr(d.shipping) : "Free")}
             ${row("Total paid", inr(d.total), true)}
           </table>
@@ -188,6 +212,21 @@ function confirmationHtml(d: {
             </td></tr>
           </table>
         </td></tr>
+
+        ${
+          d.referralCode
+            ? `<tr><td style="padding:24px 32px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${wine};border-radius:16px;">
+            <tr><td style="padding:20px 22px;">
+              <p style="${font}margin:0;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#e8a6b3;">Share with a friend</p>
+              <p style="${font}margin:8px 0 0;font-size:15px;line-height:1.55;color:#ffffff;">Give a friend your code: they get <strong>one Elanmist product free</strong> and pay only delivery.</p>
+              <p style="${font}margin:14px 0 0;display:inline-block;padding:10px 18px;border:1px dashed rgba(255,255,255,0.5);border-radius:12px;font-size:22px;font-weight:700;letter-spacing:3px;color:#ffffff;">${esc(d.referralCode)}</p>
+              <p style="${font}margin:12px 0 0;font-size:12px;color:rgba(255,255,255,0.7);">One use only. Not valid on your own orders.</p>
+            </td></tr>
+          </table>
+        </td></tr>`
+            : ""
+        }
 
         <tr><td style="padding:24px 32px 30px;">
           <p style="${font}margin:0;font-size:14px;line-height:1.6;color:${mist};">Questions? Just reply to this email, or call <a href="tel:+91${shippingInfo.support.phone}" style="color:${ink};">+91 ${shippingInfo.support.phone}</a>.</p>

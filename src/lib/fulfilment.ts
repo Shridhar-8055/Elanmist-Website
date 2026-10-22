@@ -57,6 +57,7 @@ async function fulfil(order: PaidOrder) {
       items,
       shipping: Number(n.shipping ?? 0),
       subtotal: Number(n.subtotal ?? 0),
+      discount: Number(n.discount ?? 0),
     });
     console.info("[fulfilment] shipment ready in Shiprocket", { orderNo: order.receipt, ...result });
     await recordOrder(order.receipt, {

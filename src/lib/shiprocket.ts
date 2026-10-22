@@ -138,6 +138,8 @@ export type ShipmentInput = {
   items: { slug: string; qty: number }[];
   shipping: number;
   subtotal: number;
+  /** Referral discount (one unit free), shown on the Shiprocket invoice. */
+  discount?: number;
 };
 
 type ShiprocketOrderRow = {
@@ -239,6 +241,7 @@ export async function createShipment(input: ShipmentInput) {
       })),
       payment_method: "Prepaid",
       shipping_charges: input.shipping,
+      total_discount: input.discount ?? 0,
       sub_total: input.subtotal,
       length,
       breadth,

@@ -16,16 +16,23 @@ export type PricedLine = {
 export type OrderTotals = {
   lines: PricedLine[];
   subtotal: number;
+  /** Referral discount: one unit free. 0 without a referral code. */
+  discount: number;
   shipping: number;
   total: number;
 };
+
+/** A referral makes one unit free — the priciest single unit in the cart. */
+export function referralDiscount(lines: { unitPrice: number }[]) {
+  return lines.reduce((max, l) => Math.max(max, l.unitPrice), 0);
+}
 
 /**
  * Prices a cart from the catalogue. The server calls this to decide what to
  * charge, so prices sent by the browser are never trusted. Throws on unknown
  * products or invalid quantities.
  */
-export function priceCart(input: CartLineInput[]): OrderTotals {
+export function priceCart(input: CartLineInput[], opts: { referral?: boolean } = {}): OrderTotals {
   if (!input.length) throw new PricingError("Your cart is empty.");
 
   // Merge duplicate lines so the same product can't slip past the quantity cap.
@@ -42,8 +49,10 @@ export function priceCart(input: CartLineInput[]): OrderTotals {
   });
 
   const subtotal = lines.reduce((s, l) => s + l.lineTotal, 0);
-  const shipping = shippingFor(subtotal);
-  return { lines, subtotal, shipping, total: subtotal + shipping };
+  const discount = opts.referral ? referralDiscount(lines) : 0;
+  // Delivery is judged on what the shopper actually pays for.
+  const shipping = shippingFor(subtotal - discount);
+  return { lines, subtotal, discount, shipping, total: subtotal - discount + shipping };
 }
 
 export function shippingFor(subtotal: number) {

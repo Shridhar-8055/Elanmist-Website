@@ -4,15 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, LockIcon, ShieldIcon, TruckIcon } from "@/components/icons";
+import { ArrowRight, CheckIcon, GiftIcon, LockIcon, ShieldIcon, TruckIcon } from "@/components/icons";
 import { Turnstile, TURNSTILE_SITE_KEY, type TurnstileHandle } from "@/components/Turnstile";
 import { useCart } from "@/lib/cart";
 import { customerSchema, fieldErrors, INDIAN_STATES, type CustomerInput } from "@/lib/checkout-schema";
-import { shippingFor } from "@/lib/pricing";
+import { referralDiscount, shippingFor } from "@/lib/pricing";
 import { FREE_SHIPPING_THRESHOLD, inr, shippingInfo } from "@/lib/products";
 import { LAST_ORDER_KEY, loadRazorpay, openRazorpay, type RazorpaySuccess } from "@/lib/razorpay-checkout";
 
 const DETAILS_KEY = "elanmist-checkout-details";
+// Referral codes need the database; hide the field until Supabase is configured.
+const REFERRALS_ON = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 
 const emptyDetails: CustomerInput = {
@@ -47,9 +49,47 @@ export function CheckoutClient() {
     } catch {}
   }, []);
 
-  const shipping = shippingFor(subtotal);
-  const total = subtotal + shipping;
+  // Referral code from a friend: one unit free (the priciest), delivery still paid.
+  const [referralOpen, setReferralOpen] = useState(false);
+  const [referralInput, setReferralInput] = useState("");
+  const [referral, setReferral] = useState<string | null>(null);
+  const [referralError, setReferralError] = useState<string | null>(null);
+  const [referralChecking, setReferralChecking] = useState(false);
+
+  const discount = referral ? referralDiscount(lines.map((l) => ({ unitPrice: l.product.price }))) : 0;
+  const freeItem = referral ? lines.reduce((a, b) => (b.product.price > a.product.price ? b : a)).product : null;
+  const shipping = shippingFor(subtotal - discount);
+  const total = subtotal - discount + shipping;
   const busy = status !== "idle";
+
+  async function applyReferral() {
+    setReferralError(null);
+    const code = referralInput.trim();
+    if (!code) return setReferralError("Enter a referral code.");
+    setReferralChecking(true);
+    try {
+      const res = await fetch("/api/referral/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          email: details.email,
+          phone: details.phone,
+          address1: details.address1,
+          pincode: details.pincode,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "That referral code isn't valid.");
+      setReferral(data.code);
+      setReferralInput(data.code);
+    } catch (err) {
+      setReferral(null);
+      setReferralError(err instanceof Error ? err.message : "That referral code isn't valid.");
+    } finally {
+      setReferralChecking(false);
+    }
+  }
 
   // Live delivery check for the pincode (Shiprocket). Silent if not configured or unavailable.
   const [delivery, setDelivery] = useState<{ pincode: string; text: string; ok: boolean } | null>(null);
@@ -124,6 +164,7 @@ export function CheckoutClient() {
             customer,
             items: lines.map((l) => ({ slug: l.slug, qty: l.qty })),
             turnstileToken: turnstileToken || undefined,
+            referralCode: referral ?? undefined,
           }),
         }),
         loadRazorpay(),
@@ -132,6 +173,12 @@ export function CheckoutClient() {
       // Turnstile tokens are single-use: get a fresh one for any retry.
       turnstile.current?.reset();
       if (!res.ok) {
+        if (order.fields?.referralCode) {
+          // The code was taken or isn't valid for these details: drop it so the total is honest.
+          setReferral(null);
+          setReferralOpen(true);
+          setReferralError(order.fields.referralCode);
+        }
         if (order.fields) setErrors(order.fields);
         throw new Error(order.error ?? "We couldn't start the payment.");
       }
@@ -172,7 +219,7 @@ export function CheckoutClient() {
 
   async function verify(
     response: RazorpaySuccess,
-    order: { receipt: string; totals: { lines: unknown[]; subtotal: number; shipping: number; total: number } },
+    order: { receipt: string; totals: { lines: unknown[]; subtotal: number; discount: number; shipping: number; total: number } },
     customer: CustomerInput,
   ) {
     setStatus("verifying");
@@ -191,6 +238,7 @@ export function CheckoutClient() {
           JSON.stringify({
             receipt: result.receipt,
             paymentId: result.paymentId,
+            referralCode: result.referralCode ?? null,
             totals: order.totals,
             customer: { name: customer.name, email: customer.email, phone: customer.phone, city: customer.city },
           }),
@@ -296,11 +344,95 @@ export function CheckoutClient() {
                 ))}
               </ul>
 
+              {/* Referral code */}
+              <div className={`mt-3 border-t border-ink/10 pt-4 ${REFERRALS_ON ? "" : "hidden"}`}>
+                {referral ? (
+                  <div className="flex items-start justify-between gap-3 rounded-2xl bg-white px-4 py-3">
+                    <p className="text-sm">
+                      <span className="flex items-center gap-1.5 font-semibold text-ink">
+                        <CheckIcon className="size-4 text-emerald-700" /> Referral code {referral} applied
+                      </span>
+                      <span className="mt-0.5 block text-ink/70">
+                        {freeItem?.name} is free{lines.length > 1 || lines[0].qty > 1 ? " (one unit)" : ""}. You pay delivery.
+                      </span>
+                    </p>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        setReferral(null);
+                        setReferralInput("");
+                      }}
+                      className="shrink-0 text-sm font-semibold underline underline-offset-4"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : referralOpen ? (
+                  <div>
+                    <label htmlFor="field-referralCode" className="mb-1.5 block text-sm font-semibold">
+                      Referral code
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="field-referralCode"
+                        value={referralInput}
+                        disabled={busy || referralChecking}
+                        onChange={(e) => {
+                          setReferralInput(e.target.value.toUpperCase());
+                          setReferralError(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            applyReferral();
+                          }
+                        }}
+                        placeholder="ELANXXXXXX"
+                        autoCapitalize="characters"
+                        autoComplete="off"
+                        aria-invalid={!!referralError}
+                        aria-describedby={referralError ? "err-referralCode" : "hint-referralCode"}
+                        className={`h-12 min-w-0 flex-1 rounded-2xl border bg-white px-4 font-mono text-base uppercase tracking-wider outline-none placeholder:font-sans placeholder:normal-case placeholder:tracking-normal focus:border-ink ${
+                          referralError ? "border-red-600" : "border-ink/20"
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={applyReferral}
+                        disabled={busy || referralChecking}
+                        className="h-12 shrink-0 rounded-2xl border-2 border-ink px-5 text-sm font-semibold hover:bg-ink hover:text-white disabled:opacity-60"
+                      >
+                        {referralChecking ? "Checking…" : "Apply"}
+                      </button>
+                    </div>
+                    {referralError ? (
+                      <p id="err-referralCode" role="alert" className="mt-1.5 text-sm text-red-700">
+                        {referralError}
+                      </p>
+                    ) : (
+                      <p id="hint-referralCode" className="mt-1.5 text-sm text-ink/60">
+                        A friend&apos;s code makes one product free. Fill in your mobile and email first.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setReferralOpen(true)}
+                    className="flex min-h-11 items-center gap-2 text-sm font-semibold underline underline-offset-4"
+                  >
+                    <GiftIcon className="size-4" /> Have a referral code?
+                  </button>
+                )}
+              </div>
+
               <dl className="mt-3 space-y-2 border-t border-ink/10 pt-4 text-base">
                 <Row label="Subtotal" value={inr(subtotal)} />
                 {mrpTotal > subtotal && <Row label="You save" value={`− ${inr(mrpTotal - subtotal)}`} muted />}
+                {discount > 0 && <Row label="Referral: 1 product free" value={`− ${inr(discount)}`} />}
                 <Row label="Delivery" value={shipping === 0 ? "Free" : inr(shipping)} />
-                {shipping > 0 && (
+                {shipping > 0 && !referral && (
                   <p className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm text-ink/80">
                     <TruckIcon className="size-4 shrink-0" /> Add {inr(FREE_SHIPPING_THRESHOLD - subtotal)} more for free delivery
                   </p>

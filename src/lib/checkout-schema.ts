@@ -45,6 +45,8 @@ export const createOrderSchema = z.object({
     .max(20),
   // Cloudflare Turnstile token; required on the server once Turnstile is configured.
   turnstileToken: z.string().max(4096).optional(),
+  // Referral code from a friend (ELANXXXXXX); checked again on the server.
+  referralCode: z.string().trim().max(20).optional(),
 });
 
 export const verifyPaymentSchema = z.object({

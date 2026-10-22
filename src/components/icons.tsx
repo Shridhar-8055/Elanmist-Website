@@ -128,6 +128,18 @@ export const TruckIcon = (p: P) => (
     <circle cx="17" cy="17.5" r="1.8" />
   </svg>
 );
+export const UserIcon = (p: P) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" />
+  </svg>
+);
+export const GiftIcon = (p: P) => (
+  <svg {...base} {...p}>
+    <path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13" />
+    <path d="M12 7c-1.5-3-5-3.5-5-1.2C7 7 9 7 12 7c3 0 5 0 5-1.2 0-2.3-3.5-1.8-5 1.2" />
+  </svg>
+);
 export const CheckIcon = (p: P) => (
   <svg {...base} strokeWidth={2.2} {...p}>
     <path d="m5 12.5 4.5 4.5L19 7.5" />

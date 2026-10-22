@@ -20,6 +20,8 @@ var HEADERS = [
   'Razorpay Order ID', 'Payment ID', 'Payment method', 'Notes',
   // Delivery columns (added later — appended so existing sheets stay aligned).
   'Shipment status', 'Courier', 'AWB', 'Tracking link', 'Shiprocket Order ID',
+  // Referral columns.
+  'Referral code used', 'Referral discount (₹)', 'Own referral code',
 ];
 
 // Map from the JSON keys the website sends to the column headers above.
@@ -46,6 +48,9 @@ var FIELD_TO_HEADER = {
   awb: 'AWB',
   trackingUrl: 'Tracking link',
   shiprocketOrderId: 'Shiprocket Order ID',
+  referralUsed: 'Referral code used',
+  discount: 'Referral discount (₹)',
+  referralCode: 'Own referral code',
 };
 
 // A "Paid" row must never be downgraded by a late or retried event.

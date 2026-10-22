@@ -33,6 +33,11 @@ export type SheetRow = Partial<{
   awb: string;
   trackingUrl: string;
   shiprocketOrderId: string;
+  /** Friend's code this order used, and the free-unit discount it gave. */
+  referralUsed: string;
+  discount: number;
+  /** This customer's own code to share (issued once paid). */
+  referralCode: string;
 }>;
 
 export async function recordOrder(orderNo: string, data: SheetRow) {

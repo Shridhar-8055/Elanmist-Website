@@ -74,6 +74,14 @@ export const LAST_ORDER_KEY = "elanmist-last-order";
 export type LastOrder = {
   receipt: string;
   paymentId: string;
-  totals: { lines: { slug: string; name: string; qty: number; lineTotal: number }[]; subtotal: number; shipping: number; total: number };
+  /** The buyer's own code to share; null on referral orders. */
+  referralCode?: string | null;
+  totals: {
+    lines: { slug: string; name: string; qty: number; lineTotal: number }[];
+    subtotal: number;
+    discount?: number;
+    shipping: number;
+    total: number;
+  };
   customer: { name: string; email: string; phone: string; city: string };
 };

@@ -3,6 +3,14 @@ import { after } from "next/server";
 import { createOrderSchema, fieldErrors } from "@/lib/checkout-schema";
 import { priceCart, PricingError, type OrderTotals } from "@/lib/pricing";
 import { createOrder, publicKeyId, RazorpayApiError, RazorpayConfigError, toPaise } from "@/lib/razorpay";
+import {
+  normaliseReferralCode,
+  REFERRAL_CODE,
+  referralMessages,
+  referralsEnabled,
+  reserveReferral,
+  type ReferralResult,
+} from "@/lib/referrals";
 import { recordOrder, type SheetStatus } from "@/lib/sheets";
 import { checkServiceability, type Serviceability } from "@/lib/shiprocket";
 import { clientIp, verifyTurnstile } from "@/lib/turnstile";
@@ -26,6 +34,7 @@ export async function POST(request: Request) {
     );
   }
   const { customer, items, turnstileToken } = parsed.data;
+  const referralCode = parsed.data.referralCode ? normaliseReferralCode(parsed.data.referralCode) : "";
 
   // Bot protection: reject before anything reaches Razorpay or the Sheet.
   const human = await verifyTurnstile(turnstileToken, clientIp(request));
@@ -37,9 +46,16 @@ export async function POST(request: Request) {
     );
   }
 
+  if (referralCode && (!REFERRAL_CODE.test(referralCode) || !referralsEnabled())) {
+    return Response.json(
+      { error: referralMessages.invalid, fields: { referralCode: referralMessages.invalid } },
+      { status: 422 },
+    );
+  }
+
   let totals: OrderTotals;
   try {
-    totals = priceCart(items);
+    totals = priceCart(items, { referral: Boolean(referralCode) });
   } catch (error) {
     if (error instanceof PricingError) return Response.json({ error: error.message }, { status: 422 });
     throw error;
@@ -65,6 +81,20 @@ export async function POST(request: Request) {
   const receipt = `EM-${Date.now().toString(36).toUpperCase()}-${randomUUID().slice(0, 6).toUpperCase()}`;
   const itemsText = totals.lines.map((l) => `${l.name} x${l.qty}`).join("; ");
 
+  // Hold the referral code for this order (atomic in the database) before taking payment.
+  if (referralCode) {
+    let result: ReferralResult;
+    try {
+      result = await reserveReferral(referralCode, receipt, customer);
+    } catch (error) {
+      console.error("[checkout/order] referral reserve failed", String(error));
+      return Response.json({ error: "We couldn't check the referral code right now. Please try again." }, { status: 503 });
+    }
+    if (result !== "ok") {
+      return Response.json({ error: referralMessages[result], fields: { referralCode: referralMessages[result] } }, { status: 422 });
+    }
+  }
+
   // Capture the shopper's details in the sheet whatever happens next, after the
   // response is sent so it never slows checkout down.
   const capture = (status: SheetStatus, extra: { razorpayOrderId?: string; notes?: string } = {}) =>
@@ -81,6 +111,8 @@ export async function POST(request: Request) {
         pincode: customer.pincode,
         items: itemsText,
         subtotal: totals.subtotal,
+        discount: totals.discount || undefined,
+        referralUsed: referralCode || undefined,
         shipping: totals.shipping,
         total: totals.total,
         ...extra,
@@ -109,6 +141,8 @@ export async function POST(request: Request) {
         subtotal: String(totals.subtotal),
         shipping: String(totals.shipping),
         total: String(totals.total),
+        // Present only on referral orders (keeps within Razorpay's 15-note limit).
+        ...(referralCode ? { referral_code: referralCode, discount: String(totals.discount) } : {}),
       },
     });
 

@@ -1,7 +1,6 @@
 import { after } from "next/server";
 import { verifyPaymentSchema } from "@/lib/checkout-schema";
-import { sendOrderConfirmation } from "@/lib/email";
-import { fulfilPaidOrder } from "@/lib/fulfilment";
+import { completePaidOrder, ownReferralCode } from "@/lib/paid-order";
 import { siteUrl } from "@/lib/site";
 import { recordOrder } from "@/lib/sheets";
 import {
@@ -50,6 +49,14 @@ export async function POST(request: Request) {
       return Response.json({ verified: false, error: "Payment could not be confirmed." }, { status: 400 });
     }
 
+    // Created now so the success page can show it; null for referral orders or if unavailable.
+    // Capped at 4 s so a slow database never holds up the confirmation; the webhook issues it later.
+    const referralCode = await Promise.race([
+      ownReferralCode(order),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 4_000)),
+    ]);
+    const site = siteUrl(request);
+
     after(async () => {
       await recordOrder(order.receipt, {
         status: "Paid",
@@ -57,8 +64,8 @@ export async function POST(request: Request) {
         paymentId,
         method: payment.method,
       });
-      // Both also run from the order.paid webhook; each is safe to repeat.
-      await Promise.all([fulfilPaidOrder(order), sendOrderConfirmation(order, siteUrl(request))]);
+      // Also runs from the order.paid webhook; every step is safe to repeat.
+      await completePaidOrder(order, site, referralCode);
     });
 
     console.info("[checkout/verify] payment verified", {
@@ -77,6 +84,7 @@ export async function POST(request: Request) {
       receipt: order.receipt,
       amount: payment.amount / 100,
       status: payment.status,
+      referralCode,
     });
   } catch (error) {
     if (error instanceof RazorpayConfigError) {

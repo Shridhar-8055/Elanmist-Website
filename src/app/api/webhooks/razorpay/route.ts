@@ -1,7 +1,6 @@
 import { after } from "next/server";
 import { RazorpayConfigError, verifyWebhookSignature } from "@/lib/razorpay";
-import { sendOrderConfirmation } from "@/lib/email";
-import { fulfilPaidOrder } from "@/lib/fulfilment";
+import { completePaidOrder } from "@/lib/paid-order";
 import { siteUrl } from "@/lib/site";
 import { recordOrder } from "@/lib/sheets";
 
@@ -68,7 +67,7 @@ export async function POST(request: Request) {
         const site = siteUrl(request);
         after(async () => {
           await new Promise((r) => setTimeout(r, 20_000));
-          await Promise.all([fulfilPaidOrder(paidOrder), sendOrderConfirmation(paidOrder, site)]);
+          await completePaidOrder(paidOrder, site);
         });
       }
       if (orderNo) {

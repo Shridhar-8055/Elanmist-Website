@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
-import { CheckIcon, ClockIcon, TruckIcon } from "@/components/icons";
+import { useState, useSyncExternalStore } from "react";
+import { CheckIcon, ClockIcon, GiftIcon, TruckIcon } from "@/components/icons";
 import { inr, shippingInfo } from "@/lib/products";
 import { LAST_ORDER_KEY, type LastOrder } from "@/lib/razorpay-checkout";
 
@@ -61,6 +61,12 @@ export function OrderSuccess() {
                 <dt>Subtotal</dt>
                 <dd>{inr(order.totals.subtotal)}</dd>
               </div>
+              {!!order.totals.discount && (
+                <div className="flex justify-between">
+                  <dt>Referral: 1 product free</dt>
+                  <dd>− {inr(order.totals.discount)}</dd>
+                </div>
+              )}
               <div className="flex justify-between">
                 <dt>Delivery</dt>
                 <dd>{order.totals.shipping ? inr(order.totals.shipping) : "Free"}</dd>
@@ -76,6 +82,8 @@ export function OrderSuccess() {
             </p>
           </div>
         )}
+
+        {order?.referralCode && <ShareCode code={order.referralCode} />}
 
         <ol className="mt-8 grid gap-3 text-left sm:grid-cols-2">
           <li className="flex gap-3 rounded-[22px] border border-ink/10 p-5">
@@ -118,5 +126,46 @@ export function OrderSuccess() {
         </Link>
       </div>
     </section>
+  );
+}
+
+// The buyer's own referral code, with copy and WhatsApp share.
+function ShareCode({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+  const message = `I love Elanmist skincare! Use my code ${code} on elanmist.com and get one product free — you only pay delivery.`;
+  return (
+    <div className="mt-8 rounded-[28px] bg-wine p-6 text-left text-white md:p-8">
+      <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#e8a6b3]">
+        <GiftIcon className="size-4" /> Share with a friend
+      </p>
+      <p className="mt-3 text-lg font-semibold">Give a friend one Elanmist product free.</p>
+      <p className="mt-1 text-sm text-white/75">They pay only delivery. Your code works once and can&apos;t be used on your own orders.</p>
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <span className="rounded-2xl border border-dashed border-white/50 px-5 py-3 font-mono text-2xl font-bold tracking-[0.2em]">
+          {code}
+        </span>
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(code);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            } catch {}
+          }}
+          className="h-12 rounded-full bg-white px-6 text-sm font-semibold text-ink"
+        >
+          <span aria-live="polite">{copied ? "Copied ✓" : "Copy code"}</span>
+        </button>
+        <a
+          href={`https://wa.me/?text=${encodeURIComponent(message)}`}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex h-12 items-center rounded-full border-2 border-white px-6 text-sm font-semibold hover:bg-white hover:text-ink"
+        >
+          Share on WhatsApp
+        </a>
+      </div>
+    </div>
   );
 }

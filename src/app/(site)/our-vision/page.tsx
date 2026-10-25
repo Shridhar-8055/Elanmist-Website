@@ -37,7 +37,7 @@ const chapters = [
 // CONFIRM: founder name, quotes and the ingredient promises with the client.
 const founders = [
   {
-    name: "Founder Name",
+    name: "Shreyas Raichur",
     role: "Founder",
     image: "/images/team/founder.webp",
     quote: "I wanted skincare I could explain to my own family — what's inside, and why it's there.",

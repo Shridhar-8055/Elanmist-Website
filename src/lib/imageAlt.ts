@@ -23,7 +23,13 @@ const alts: Record<string, string> = {
   "/images/shoot/gel-jar-box.webp": "Elanmist HydroBoost Gel jar beside its blue carton",
   "/images/shoot/gel-jar.webp": "Elanmist HydroBoost Gel 50 g jar with silver lid",
   "/images/shoot/sunscreen-with-box.webp": "Elanmist Hybrid Sunscreen tube next to its pink foil carton",
-  "/images/skin-dry.webp": "Close-up of dry, flaky skin texture",
+  "/images/certificates/hybrid-sunscreen.webp":
+    "Dermatologically tested certificate for Elanmist SPF 50 sunscreen: non-irritant under BIS 4011, CCFT Laboratories, 20 March 2026",
+  "/images/certificates/hydroboost-gel.webp":
+    "Dermatologically tested certificate for Elanmist Hydro Gel: non-irritant under BIS 4011, CCFT Laboratories, 20 March 2026",
+  "/images/certificates/glutathione-cream.webp":
+    "Dermatologically tested certificate for Elanmist skin brightening cream: non-irritant under BIS 4011, CCFT Laboratories, 20 March 2026",
+  "/images/skin-dry.webp":"Close-up of dry, flaky skin texture",
   "/images/skin-oily.webp": "Close-up of oily skin with visible shine",
   "/images/skin-combination.webp": "Close-up of combination skin texture",
   "/images/skin-sensitive.webp": "Close-up of sensitive skin with mild redness",

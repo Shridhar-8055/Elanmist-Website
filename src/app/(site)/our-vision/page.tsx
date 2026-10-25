@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "@/components/icons";
+import { CertificateDeck } from "@/components/CertificateDeck";
+import { ArrowRight, CheckIcon } from "@/components/icons";
 import { Reveal } from "@/components/InView";
 import { Philosophy } from "@/components/Philosophy";
+import { CERT_DATE, CERT_LAB, CERT_PDF, CERT_STANDARD, certificates } from "@/lib/certificates";
 import { altFor } from "@/lib/imageAlt";
+import { getProduct } from "@/lib/products";
 
 export const metadata: Metadata = { title: "Our Vision" };
 
@@ -188,6 +191,55 @@ export default function VisionPage() {
               ))}
             </ol>
           </div>
+        </div>
+      </section>
+
+      {/* Dermatology certificates: lab facts beside a flip-card deck of products. */}
+      <section className="relative overflow-hidden bg-pale px-4 py-20 md:py-28">
+        <span aria-hidden className="pointer-events-none absolute -right-32 top-10 size-[420px] rounded-full bg-emerald-200/30 blur-3xl" />
+        <div className="relative mx-auto grid max-w-[1280px] items-center gap-14 lg:grid-cols-[1fr_1.05fr] lg:gap-20 [&>*]:min-w-0">
+          <div>
+            <p className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-800 ring-1 ring-emerald-700/15">
+              <CheckIcon className="size-3.5" /> Independently certified
+            </p>
+            {/* "Dermatologically" is one long word, so the size is capped to fit narrow screens. */}
+            <h2 className="display mt-5 text-[clamp(30px,8.6vw,56px)] leading-[0.98] lg:text-[clamp(48px,4.6vw,72px)]">
+              Dermatologically tested
+            </h2>
+            <p className="mt-6 max-w-lg text-[15px] leading-relaxed text-ink/75 md:text-base">
+              Every Elanmist formula was sent to an independent laboratory and tested for skin irritation. All three
+              came back the same: <strong className="text-ink">non-irritant</strong>.
+            </p>
+            <dl className="mt-9 grid max-w-lg grid-cols-2 gap-px overflow-hidden rounded-2xl bg-ink/10 ring-1 ring-ink/10">
+              {[
+                ["Tested by", "CCFT Laboratories, Meerut"],
+                ["Standard", `${CERT_STANDARD} skin irritation`],
+                ["Result", "Non-irritant · 3 of 3 products"],
+                ["Certified", CERT_DATE],
+              ].map(([k, v]) => (
+                <div key={k} className="bg-white px-4 py-3.5">
+                  <dt className="text-xs font-medium uppercase tracking-[0.12em] text-ink/50">{k}</dt>
+                  <dd className="mt-1 text-[15px] font-semibold">{v}</dd>
+                </div>
+              ))}
+            </dl>
+            <a
+              href={CERT_PDF}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-8 inline-flex h-12 items-center gap-2.5 rounded-full border-2 border-ink px-6 text-[15px] font-semibold transition-colors hover:bg-ink hover:text-white"
+            >
+              Download all certificates (PDF) <ArrowRight className="size-4" />
+            </a>
+            <p className="mt-3 text-xs text-ink/50">{CERT_LAB}.</p>
+          </div>
+          <CertificateDeck
+            standard={CERT_STANDARD}
+            cards={certificates.map((c) => {
+              const p = getProduct(c.slug)!;
+              return { slug: c.slug, name: p.name, certifiedAs: c.certifiedAs, number: c.number, certificate: c.image, photo: p.image, backdrop: p.backdrop };
+            })}
+          />
         </div>
       </section>
 

@@ -41,12 +41,23 @@ export function CheckoutClient() {
   const [message, setMessage] = useState<string | null>(null);
 
   // Remember shipping details on this device so repeat customers don't retype them.
+  // Logged-in customers without saved details here get their account address instead.
   useEffect(() => {
+    let saved: string | null = null;
     try {
-      const saved = localStorage.getItem(DETAILS_KEY);
+      saved = localStorage.getItem(DETAILS_KEY);
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time restore from storage after hydration
       if (saved) setDetails({ ...emptyDetails, ...JSON.parse(saved) });
     } catch {}
+    if (saved || !REFERRALS_ON) return;
+    fetch("/api/account/address")
+      .then((r) => (r.status === 200 ? r.json() : null))
+      .then((a: Partial<Record<keyof CustomerInput, string | null>> | null) => {
+        if (!a) return;
+        const clean = Object.fromEntries(Object.entries(a).filter(([, v]) => typeof v === "string" && v));
+        setDetails((d) => ({ ...d, ...clean }));
+      })
+      .catch(() => {});
   }, []);
 
   // A friend's referral code (one unit free) or an admin coupon. Checked again on the server.

@@ -1,0 +1,15 @@
+<!-- Supabase → Authentication → Emails → Templates. Paste into both "Magic Link" and
+     "Confirm signup". Subject: Your Elanmist login code -->
+<div style="margin:0;padding:28px 12px;background:#f2eeea;font-family:Inter,'Helvetica Neue',Arial,sans-serif;">
+  <div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:20px;overflow:hidden;">
+    <div style="background:#230a0e;padding:24px 28px;">
+      <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-style:italic;color:#ffffff;">Elanmist</p>
+    </div>
+    <div style="padding:28px;">
+      <p style="margin:0;font-size:16px;line-height:1.6;color:#0d0b0b;">Here is your login code:</p>
+      <p style="margin:18px 0;padding:16px 0;background:#f2eeea;border-radius:14px;text-align:center;font-size:34px;font-weight:700;letter-spacing:10px;color:#0d0b0b;">{{ .Token }}</p>
+      <p style="margin:0;font-size:14px;line-height:1.6;color:#6b635e;">Enter it on the Elanmist website to log in. It works for 10 minutes and only once.</p>
+      <p style="margin:18px 0 0;font-size:13px;line-height:1.6;color:#6b635e;">Didn't ask for this? You can ignore this email — nobody can log in without the code.</p>
+    </div>
+  </div>
+</div>

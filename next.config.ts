@@ -11,11 +11,10 @@ const legacyRedirects: { source: string; destination: string }[] = [
   { source: "/privacy-policy", destination: "/policies/privacy" },
   { source: "/terms-and-conditions", destination: "/policies/terms" },
   { source: "/cart", destination: "/shop" },
-  // The new site has no customer accounts.
-  { source: "/login", destination: "/" },
-  { source: "/registration", destination: "/" },
-  { source: "/my-account/:path*", destination: "/" },
-  { source: "/lost-your-password", destination: "/" },
+  // Old WooCommerce account pages go to the new OTP login (no passwords).
+  { source: "/registration", destination: "/login" },
+  { source: "/my-account/:path*", destination: "/account" },
+  { source: "/lost-your-password", destination: "/login" },
   { source: "/hello-world", destination: "/" },
 ];
 

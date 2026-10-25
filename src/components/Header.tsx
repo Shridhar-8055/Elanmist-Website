@@ -17,6 +17,7 @@ import {
   SearchIcon,
   SparkIcon,
   TruckIcon,
+  UserIcon,
 } from "./icons";
 import { Wordmark } from "./Wordmark";
 
@@ -34,6 +35,7 @@ const mobileLinks = [
   { href: "/our-vision", label: "Our Vision", Icon: LeafIcon },
   { href: "/contact", label: "Contact", Icon: ChatIcon },
   { href: "/track", label: "Track Order", Icon: TruckIcon },
+  { href: "/account", label: "My Account", Icon: UserIcon },
   { href: "/policies/shipping-and-returns", label: "Shipping", Icon: DocIcon },
 ];
 
@@ -138,6 +140,16 @@ export function Header() {
             <SearchIcon className="size-5" />
             <span className="hidden lg:inline">Search</span>
           </button>
+          <Link
+            href="/account"
+            aria-label="My account"
+            title="Account"
+            className={`grid size-11 place-items-center rounded-full border transition-colors ${
+              light ? "border-white/70 bg-black/20 text-white hover:bg-black/35" : "border-ink/20 bg-white text-ink hover:bg-pale"
+            }`}
+          >
+            <UserIcon className="size-5" />
+          </Link>
           <button
             type="button"
             aria-label={`Open cart, ${count} item${count === 1 ? "" : "s"}`}

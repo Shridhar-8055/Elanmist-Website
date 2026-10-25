@@ -668,3 +668,10 @@ begin
     execute format('grant execute on function %s to service_role', f.sig);
   end loop;
 end $$;
+
+-- ═══ Customer accounts: what a logged-in customer may do (Row Level Security still applies) ═══
+-- Read their own orders and items; read and update their own profile (saved address).
+grant select on public.orders, public.order_items to authenticated;
+grant select, update on public.customers to authenticated;
+grant execute on function public.current_email() to authenticated;
+grant execute on function public.current_phone() to authenticated;

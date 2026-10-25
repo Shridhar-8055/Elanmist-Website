@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CheckIcon, LockIcon } from "@/components/icons";
 import { supabaseBrowser } from "@/lib/supabase/browser";
@@ -44,7 +43,6 @@ function validate(method: Method, value: string) {
 }
 
 export function LoginForm({ redirectTo }: { redirectTo: string }) {
-  const router = useRouter();
   const [method, setMethod] = useState<Method>("email");
   const [value, setValue] = useState("");
   const [step, setStep] = useState<Step>("identify");
@@ -91,9 +89,10 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
         return;
       }
       setStep("done");
-      // Session cookies are set; load the account (or wherever they came from).
-      router.replace(redirectTo);
-      router.refresh();
+      // Session cookies are now set. Do a full page load rather than a client-side
+      // navigation: the router may hold a prefetched "/account → /login" redirect
+      // from before the customer logged in, which would bounce them around.
+      window.location.replace(redirectTo);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {

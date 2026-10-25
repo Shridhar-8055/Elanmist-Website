@@ -142,6 +142,8 @@ export function Header() {
           </button>
           <Link
             href="/account"
+            // Don't prefetch: the answer depends on login state, which can change on this page.
+            prefetch={false}
             aria-label="My account"
             title="Account"
             className={`grid size-11 place-items-center rounded-full border transition-colors ${
@@ -237,6 +239,7 @@ export function Header() {
               <li key={label}>
                 <Link
                   href={href}
+                  prefetch={href === "/account" ? false : undefined}
                   aria-current={isActive(href) ? "page" : undefined}
                   className={`flex h-14 items-center gap-3 rounded-2xl px-4 text-base font-medium ${
                     isActive(href) ? "bg-ink text-white" : "bg-pale text-ink"

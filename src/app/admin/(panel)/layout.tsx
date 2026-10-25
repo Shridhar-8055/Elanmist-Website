@@ -7,7 +7,9 @@ export default async function AdminPanelLayout({ children }: LayoutProps<"/admin
   await requireAdmin();
   return (
     <div className="lg:grid lg:min-h-svh lg:grid-cols-[232px_1fr]">
-      <aside className="sticky top-0 z-30 bg-wine text-white lg:h-svh">
+      {/* The wine column runs the full page height; its contents stay pinned while scrolling. */}
+      <aside className="sticky top-0 z-30 bg-wine text-white lg:static lg:min-h-svh">
+        <div className="lg:sticky lg:top-0">
         <div className="flex items-center justify-between gap-3 px-4 py-3 lg:block lg:px-6 lg:py-7">
           <p className="text-[26px] leading-none">
             <Wordmark />
@@ -22,6 +24,7 @@ export default async function AdminPanelLayout({ children }: LayoutProps<"/admin
           </form>
         </div>
         <AdminNav />
+        </div>
       </aside>
       <main className="mx-auto w-full min-w-0 max-w-[1240px] px-4 py-6 md:px-8 md:py-9">{children}</main>
     </div>

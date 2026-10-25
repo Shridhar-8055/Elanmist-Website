@@ -13,7 +13,9 @@ const KINDS: { kind: Kind; title: string; body: string }[] = [
   { kind: "free_shipping", title: "Free delivery", body: "No ₹70 delivery charge" },
 ];
 
-const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const PERCENTS = [10, 15, 20, 25, 30, 50, 100];
+
+const ALPHABET ="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const randomCode = () => "GIFT" + Array.from(crypto.getRandomValues(new Uint32Array(6)), (n) => ALPHABET[n % ALPHABET.length]).join("");
 
 const input = "h-11 w-full rounded-xl border border-ink/20 bg-white px-3.5 text-[15px] outline-none focus:border-ink";
@@ -24,6 +26,7 @@ export function CouponForm({ prefill, customers }: { prefill: { phone: string; e
   const [kind, setKind] = useState<Kind>("percent");
   const [who, setWho] = useState<"everyone" | "customer">(prefill.phone || prefill.email ? "customer" : "everyone");
   const [code, setCode] = useState("");
+  const [value, setValue] = useState("");
   const [person, setPerson] = useState(prefill);
   const [search, setSearch] = useState(prefill.name || prefill.phone);
   const form = useRef<HTMLFormElement>(null);
@@ -34,6 +37,7 @@ export function CouponForm({ prefill, customers }: { prefill: { phone: string; e
     form.current?.reset();
     /* eslint-disable react-hooks/set-state-in-effect -- resetting controlled fields after the server confirms */
     setCode("");
+    setValue("");
     setPerson({ phone: "", email: "", name: "" });
     setSearch("");
     setWho("everyone");
@@ -88,9 +92,20 @@ export function CouponForm({ prefill, customers }: { prefill: { phone: string; e
         {(kind === "percent" || kind === "flat") && (
           <div>
             <label htmlFor="c-value" className={label}>
-              {kind === "percent" ? "Percent off" : "Amount off (₹)"}
+              {kind === "percent" ? "Percent off (any 1–100)" : "Amount off (₹)"}
             </label>
-            <input id="c-value" name="value" type="number" required min={1} max={kind === "percent" ? 100 : 100000} className={input} placeholder={kind === "percent" ? "20" : "100"} />
+            <input
+              id="c-value"
+              name="value"
+              type="number"
+              required
+              min={1}
+              max={kind === "percent" ? 100 : 100000}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className={input}
+              placeholder={kind === "percent" ? "20" : "100"}
+            />
           </div>
         )}
         <div>
@@ -100,6 +115,30 @@ export function CouponForm({ prefill, customers }: { prefill: { phone: string; e
           <input id="c-desc" name="description" maxLength={120} className={input} placeholder="e.g. Diwali campaign" />
         </div>
       </div>
+
+      {kind === "percent" && (
+        <div className="-mt-2">
+          <p className="mb-1.5 text-xs font-medium text-ink/55">Quick pick</p>
+          <div className="flex flex-wrap gap-1.5">
+            {PERCENTS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                aria-pressed={value === String(p)}
+                onClick={() => setValue(String(p))}
+                className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ring-1 ${value === String(p) ? "bg-ink text-white ring-ink" : "bg-white ring-ink/15 hover:ring-ink/40"}`}
+              >
+                {p}%
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-ink/55">
+            {value === "100"
+              ? "100% off: every product is free and the customer pays only the ₹70 delivery."
+              : "Delivery stays free when what the customer pays for products is ₹500 or more; otherwise ₹70 is added."}
+          </p>
+        </div>
+      )}
 
       <fieldset>
         <legend className={label}>Who can use it?</legend>

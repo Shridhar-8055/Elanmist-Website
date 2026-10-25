@@ -40,9 +40,15 @@ export default async function ReferralsPage({ searchParams }: PageProps<"/admin/
   return (
     <>
       <PageHeader title="Referral codes" subtitle="Each paid order gets one code to share. A friend who uses it gets one product free.">
-        <form action="/admin/referrals" className="flex gap-2">
+        <form action="/admin/referrals" className="flex w-full gap-2 md:w-auto">
           {status && <input type="hidden" name="status" value={status} />}
-          <input name="q" defaultValue={q} placeholder="Code, owner name or mobile" aria-label="Search codes" className="h-10 w-[240px] rounded-full border border-ink/15 bg-white px-4 text-sm outline-none focus:border-ink" />
+          <input
+            name="q"
+            defaultValue={q}
+            placeholder="Code, owner name or mobile"
+            aria-label="Search codes"
+            className="h-10 min-w-0 flex-1 rounded-full border border-ink/15 bg-white px-4 text-sm outline-none focus:border-ink md:w-[240px] md:flex-none"
+          />
           <button type="submit" className="h-10 rounded-full bg-ink px-4 text-sm font-semibold text-white">
             Search
           </button>
@@ -64,7 +70,54 @@ export default async function ReferralsPage({ searchParams }: PageProps<"/admin/
 
       <Card className="p-0 md:p-0">
         {data.rows.length ? (
-          <div className="overflow-x-auto">
+          <>
+          {/* Phones: one card per code. */}
+          <ul className="divide-y divide-ink/5 md:hidden">
+            {data.rows.map((r) => (
+              <li key={r.code} className="px-4 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-mono font-bold tracking-wider">{r.code}</p>
+                    <p className="text-xs text-ink/55">Given {when(r.created_at)}</p>
+                  </div>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${TONE[r.status]}`}>{LABEL[r.status]}</span>
+                </div>
+                <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                  <div className="min-w-0">
+                    <dt className="text-xs text-ink/50">Owner</dt>
+                    <dd className="font-medium">{r.owner_name ?? "—"}</dd>
+                    <dd className="text-xs text-ink/55">+91 {r.owner_phone}</dd>
+                  </div>
+                  <div className="min-w-0">
+                    <dt className="text-xs text-ink/50">Used by</dt>
+                    {r.used_order_no ? (
+                      <>
+                        <dd>{r.used_by_name ?? "—"}</dd>
+                        <dd className="text-xs text-ink/55">{when(r.used_at)}</dd>
+                      </>
+                    ) : (
+                      <dd className="text-ink/40">Not yet</dd>
+                    )}
+                  </div>
+                </dl>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <Link href={`/admin/orders/${r.owner_order_no}`} className="truncate font-mono text-xs text-ink/60 underline underline-offset-2">
+                    {r.owner_order_no}
+                  </Link>
+                  {r.status !== "used" && (
+                    <form action={toggleReferralAction}>
+                      <input type="hidden" name="code" value={r.code} />
+                      <input type="hidden" name="disabled" value={String(r.status !== "disabled")} />
+                      <button type="submit" className={`rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${r.status === "disabled" ? "ring-ink/15" : "text-red-700 ring-red-200"}`}>
+                        {r.status === "disabled" ? "Enable" : "Disable"}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[760px] text-sm">
               <thead className="border-b border-ink/10 text-left text-ink/55">
                 <tr>
@@ -127,6 +180,7 @@ export default async function ReferralsPage({ searchParams }: PageProps<"/admin/
               </tbody>
             </table>
           </div>
+          </>
         ) : (
           <div className="p-5">
             <Empty>{q ? `No codes match “${q}”.` : "No referral codes yet. They're created when orders are paid."}</Empty>

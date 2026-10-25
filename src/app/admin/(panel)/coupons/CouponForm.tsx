@@ -106,6 +106,28 @@ export function CouponForm({ prefill, customers }: { prefill: { phone: string; e
               className={input}
               placeholder={kind === "percent" ? "20" : "100"}
             />
+            {kind === "percent" && (
+              <>
+                <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Quick pick a percentage">
+                  {PERCENTS.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      aria-pressed={value === String(p)}
+                      onClick={() => setValue(String(p))}
+                      className={`rounded-full px-3 py-1.5 text-sm font-semibold ring-1 ${value === String(p) ? "bg-ink text-white ring-ink" : "bg-white ring-ink/15 hover:ring-ink/40"}`}
+                    >
+                      {p}%
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-ink/55">
+                  {value === "100"
+                    ? "100% off: every product is free and the customer pays only the ₹70 delivery."
+                    : "Delivery stays free when the customer pays ₹500 or more for products; otherwise ₹70 is added."}
+                </p>
+              </>
+            )}
           </div>
         )}
         <div>
@@ -115,30 +137,6 @@ export function CouponForm({ prefill, customers }: { prefill: { phone: string; e
           <input id="c-desc" name="description" maxLength={120} className={input} placeholder="e.g. Diwali campaign" />
         </div>
       </div>
-
-      {kind === "percent" && (
-        <div className="-mt-2">
-          <p className="mb-1.5 text-xs font-medium text-ink/55">Quick pick</p>
-          <div className="flex flex-wrap gap-1.5">
-            {PERCENTS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                aria-pressed={value === String(p)}
-                onClick={() => setValue(String(p))}
-                className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ring-1 ${value === String(p) ? "bg-ink text-white ring-ink" : "bg-white ring-ink/15 hover:ring-ink/40"}`}
-              >
-                {p}%
-              </button>
-            ))}
-          </div>
-          <p className="mt-2 text-xs text-ink/55">
-            {value === "100"
-              ? "100% off: every product is free and the customer pays only the ₹70 delivery."
-              : "Delivery stays free when what the customer pays for products is ₹500 or more; otherwise ₹70 is added."}
-          </p>
-        </div>
-      )}
 
       <fieldset>
         <legend className={label}>Who can use it?</legend>

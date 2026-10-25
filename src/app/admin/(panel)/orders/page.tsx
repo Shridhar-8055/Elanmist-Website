@@ -53,14 +53,14 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
             </Link>
           ))}
         </nav>
-        <form action="/admin/orders" className="ml-auto flex gap-2">
+        <form action="/admin/orders" className="flex w-full gap-2 md:ml-auto md:w-auto">
           {status && <input type="hidden" name="status" value={status} />}
           <input
             name="q"
             defaultValue={q}
             placeholder="Order no, name, mobile, email, AWB"
             aria-label="Search orders"
-            className="h-10 w-[260px] rounded-full border border-ink/15 bg-white px-4 text-sm outline-none focus:border-ink"
+            className="h-10 min-w-0 flex-1 rounded-full border border-ink/15 bg-white px-4 text-sm outline-none focus:border-ink md:w-[260px] md:flex-none"
           />
           <button type="submit" className="h-10 rounded-full bg-ink px-4 text-sm font-semibold text-white">
             Search
@@ -70,7 +70,38 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
 
       <Card className="p-0 md:p-0">
         {data.rows.length ? (
-          <div className="overflow-x-auto">
+          <>
+          {/* Phones: one card per order. */}
+          <ul className="divide-y divide-ink/5 md:hidden">
+            {data.rows.map((o) => (
+              <li key={o.order_no}>
+                <Link href={`/admin/orders/${o.order_no}`} className="block px-4 py-4 active:bg-pale/60">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-mono text-[13px] font-semibold">{o.order_no}</p>
+                      <p className="text-xs text-ink/55">{when(o.created_at)}</p>
+                    </div>
+                    <p className="shrink-0 text-right font-semibold tabular-nums">
+                      {inr(o.total)}
+                      {o.discount > 0 && <span className="block text-xs font-normal text-ink/55">−{inr(o.discount)} off</span>}
+                    </p>
+                  </div>
+                  <p className="mt-2 text-sm font-medium">
+                    {o.name || "—"} <span className="font-normal text-ink/55">· {o.city}</span>
+                  </p>
+                  {o.items && <p className="mt-0.5 text-sm text-ink/65">{o.items}</p>}
+                  <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                    <StatusBadge status={o.status} />
+                    <ShipmentBadge status={o.shipment_status} awb={o.awb} paid={o.status === "paid"} />
+                    {(o.coupon_code_used ?? o.referral_code_used) && (
+                      <span className="rounded-full bg-pale px-2.5 py-1 font-mono text-xs">{o.coupon_code_used ?? o.referral_code_used}</span>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[900px] text-sm">
               <thead className="border-b border-ink/10 text-left text-ink/55">
                 <tr>
@@ -116,6 +147,7 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
               </tbody>
             </table>
           </div>
+          </>
         ) : (
           <div className="p-5">
             <Empty>{q ? `No orders match “${q}”.` : "No orders here yet."}</Empty>

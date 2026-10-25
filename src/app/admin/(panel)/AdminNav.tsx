@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { logoutAction } from "../actions";
 
 const links = [
@@ -14,8 +15,14 @@ const links = [
 
 export function AdminNav() {
   const pathname = usePathname();
+  // On phones the menu scrolls sideways; keep the current page's tab in view.
+  const nav = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = nav.current?.querySelector<HTMLElement>("[aria-current=page]");
+    if (el && nav.current) nav.current.scrollTo({ left: el.offsetLeft - 8, behavior: "smooth" });
+  }, [pathname]);
   return (
-    <nav aria-label="Admin" className="overflow-x-auto px-2 pb-2 lg:px-3">
+    <nav ref={nav} aria-label="Admin" className="overflow-x-auto px-2 pb-2 [scrollbar-width:none] lg:px-3">
       <ul className="flex gap-1 lg:flex-col">
         {links.map((l) => {
           const active = l.href === "/admin" ? pathname === "/admin" : pathname.startsWith(l.href);

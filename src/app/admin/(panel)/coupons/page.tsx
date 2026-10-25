@@ -72,8 +72,8 @@ export default async function CouponsPage({ searchParams }: PageProps<"/admin/co
             const wa = whatsappLink(c);
             return (
               <Card key={c.code} className="p-4 md:p-5">
-                <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
-                  <div className="min-w-[180px]">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
+                  <div className="lg:min-w-[180px]">
                     <p className="flex items-center gap-2">
                       <span className="font-mono text-lg font-bold tracking-wider">{c.code}</span>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${s.tone}`}>{s.label}</span>
@@ -81,7 +81,8 @@ export default async function CouponsPage({ searchParams }: PageProps<"/admin/co
                     <p className="mt-0.5 text-sm font-semibold">{gives(c)}</p>
                     {c.description && <p className="text-xs text-ink/55">{c.description}</p>}
                   </div>
-                  <dl className="grid flex-1 grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl bg-pale/70 p-3 text-sm sm:grid-cols-4 lg:flex-1 lg:bg-transparent lg:p-0">
+
                     <div>
                       <dt className="text-xs text-ink/50">For</dt>
                       <dd>

@@ -50,7 +50,8 @@ export function CheckoutClient() {
   }, []);
 
   // A friend's referral code (one unit free) or an admin coupon. Checked again on the server.
-  const [referralOpen, setReferralOpen] = useState(false);
+  // Shown open by default: a collapsed link was too easy to miss.
+  const [referralOpen, setReferralOpen] = useState(true);
   const [referralInput, setReferralInput] = useState("");
   const [promo, setPromo] = useState<{ code: string; kind: "referral" | "coupon"; offer: Offer; label: string } | null>(null);
   const referral = promo?.code ?? null;
@@ -380,8 +381,8 @@ export function CheckoutClient() {
                   </div>
                 ) : referralOpen ? (
                   <div>
-                    <label htmlFor="field-referralCode" className="mb-1.5 block text-sm font-semibold">
-                      Referral or coupon code
+                    <label htmlFor="field-referralCode" className="mb-1.5 flex items-center gap-2 text-sm font-semibold">
+                      <GiftIcon className="size-4" /> Have a coupon or referral code?
                     </label>
                     <div className="flex gap-2">
                       <input
@@ -398,7 +399,7 @@ export function CheckoutClient() {
                             applyReferral();
                           }
                         }}
-                        placeholder="Enter code"
+                        placeholder="e.g. DIWALI10"
                         autoCapitalize="characters"
                         autoComplete="off"
                         aria-invalid={!!referralError}

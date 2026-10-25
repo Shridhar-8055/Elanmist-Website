@@ -140,18 +140,29 @@ export default function VisionPage() {
               {founders.map((f, i) => (
                 <Reveal key={f.role} delay={i * 140} className={i === 1 ? "mt-16 md:mt-24" : ""}>
                   <figure className="group">
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-t-full bg-ink ring-1 ring-white/15">
-                      <Image
-                        src={f.image}
-                        alt={`${f.name}, ${f.role} of Elanmist`}
-                        fill
-                        sizes="(min-width: 1024px) 300px, 50vw"
-                        className="object-cover object-top grayscale-[35%] transition-[transform,filter] duration-[1200ms] ease-out group-hover:scale-[1.04] group-hover:grayscale-0"
+                    {/* Rectangular portrait with an offset outline frame that slides into place on hover. */}
+                    <div className="relative mr-3 mb-3 md:mr-4 md:mb-4">
+                      <span
+                        aria-hidden
+                        className="absolute inset-0 translate-x-3 translate-y-3 rounded-md border border-[#e8a6b3]/60 transition-transform duration-700 ease-out group-hover:translate-x-0 group-hover:translate-y-0 md:translate-x-4 md:translate-y-4"
                       />
+                      <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-ink shadow-[0_24px_60px_rgb(0_0_0/0.45)]">
+                        <Image
+                          src={f.image}
+                          alt={`${f.name}, ${f.role} of Elanmist`}
+                          fill
+                          sizes="(min-width: 1024px) 300px, 50vw"
+                          className="object-cover object-top transition-transform duration-[1200ms] ease-out group-hover:scale-[1.05]"
+                        />
+                        <span aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent" />
+                        <span className="absolute left-3 top-3 font-serif text-lg italic text-white/90 md:left-4 md:top-4 md:text-xl">0{i + 1}</span>
+                        <span className="absolute bottom-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-wine md:bottom-4 md:left-4 md:text-[11px]">
+                          {f.role}
+                        </span>
+                      </div>
                     </div>
-                    <figcaption className="mt-5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#e8a6b3]">{f.role}</p>
-                      <h3 className="mt-1.5 text-xl font-bold tracking-tight md:text-2xl">{f.name}</h3>
+                    <figcaption className="mt-6 md:mt-7">
+                      <h3 className="text-xl font-bold tracking-tight md:text-2xl">{f.name}</h3>
                       <blockquote className="mt-3 border-l border-white/25 pl-3 font-serif text-[15px] italic leading-snug text-white/80 md:text-lg">
                         “{f.quote}”
                       </blockquote>

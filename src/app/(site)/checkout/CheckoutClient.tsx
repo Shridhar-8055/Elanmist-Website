@@ -8,7 +8,7 @@ import { ArrowRight, CheckIcon, GiftIcon, LockIcon, ShieldIcon, TruckIcon } from
 import { Turnstile, TURNSTILE_SITE_KEY, type TurnstileHandle } from "@/components/Turnstile";
 import { useCart } from "@/lib/cart";
 import { customerSchema, fieldErrors, INDIAN_STATES, type CustomerInput } from "@/lib/checkout-schema";
-import { referralDiscount, shippingFor } from "@/lib/pricing";
+import { applyOffer, type Offer } from "@/lib/pricing";
 import { FREE_SHIPPING_THRESHOLD, inr, shippingInfo } from "@/lib/products";
 import { LAST_ORDER_KEY, loadRazorpay, openRazorpay, type RazorpaySuccess } from "@/lib/razorpay-checkout";
 
@@ -49,23 +49,29 @@ export function CheckoutClient() {
     } catch {}
   }, []);
 
-  // Referral code from a friend: one unit free (the priciest), delivery still paid.
+  // A friend's referral code (one unit free) or an admin coupon. Checked again on the server.
   const [referralOpen, setReferralOpen] = useState(false);
   const [referralInput, setReferralInput] = useState("");
-  const [referral, setReferral] = useState<string | null>(null);
+  const [promo, setPromo] = useState<{ code: string; kind: "referral" | "coupon"; offer: Offer; label: string } | null>(null);
+  const referral = promo?.code ?? null;
   const [referralError, setReferralError] = useState<string | null>(null);
   const [referralChecking, setReferralChecking] = useState(false);
+  const setReferral = (code: null) => setPromo(code);
 
-  const discount = referral ? referralDiscount(lines.map((l) => ({ unitPrice: l.product.price }))) : 0;
-  const freeItem = referral ? lines.reduce((a, b) => (b.product.price > a.product.price ? b : a)).product : null;
-  const shipping = shippingFor(subtotal - discount);
+  const { discount, shipping } = applyOffer(
+    lines.map((l) => ({ unitPrice: l.product.price })),
+    subtotal,
+    promo?.offer,
+  );
+  const freeItem =
+    promo?.offer.kind === "free_product" ? lines.reduce((a, b) => (b.product.price > a.product.price ? b : a)).product : null;
   const total = subtotal - discount + shipping;
   const busy = status !== "idle";
 
   async function applyReferral() {
     setReferralError(null);
     const code = referralInput.trim();
-    if (!code) return setReferralError("Enter a referral code.");
+    if (!code) return setReferralError("Enter a referral or coupon code.");
     setReferralChecking(true);
     try {
       const res = await fetch("/api/referral/check", {
@@ -77,15 +83,16 @@ export function CheckoutClient() {
           phone: details.phone,
           address1: details.address1,
           pincode: details.pincode,
+          items: lines.map((l) => ({ slug: l.slug, qty: l.qty })),
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "That referral code isn't valid.");
-      setReferral(data.code);
+      if (!res.ok) throw new Error(data.error ?? "That code isn't valid.");
+      setPromo({ code: data.code, kind: data.kind, offer: data.offer, label: data.label });
       setReferralInput(data.code);
     } catch (err) {
-      setReferral(null);
-      setReferralError(err instanceof Error ? err.message : "That referral code isn't valid.");
+      setPromo(null);
+      setReferralError(err instanceof Error ? err.message : "That code isn't valid.");
     } finally {
       setReferralChecking(false);
     }
@@ -350,10 +357,13 @@ export function CheckoutClient() {
                   <div className="flex items-start justify-between gap-3 rounded-2xl bg-white px-4 py-3">
                     <p className="text-sm">
                       <span className="flex items-center gap-1.5 font-semibold text-ink">
-                        <CheckIcon className="size-4 text-emerald-700" /> Referral code {referral} applied
+                        <CheckIcon className="size-4 text-emerald-700" /> {promo?.kind === "coupon" ? "Coupon" : "Referral code"}{" "}
+                        {referral} applied
                       </span>
                       <span className="mt-0.5 block text-ink/70">
-                        {freeItem?.name} is free{lines.length > 1 || lines[0].qty > 1 ? " (one unit)" : ""}. You pay delivery.
+                        {freeItem
+                          ? `${freeItem.name} is free${lines.length > 1 || lines[0].qty > 1 ? " (one unit)" : ""}. You pay delivery.`
+                          : `${promo?.label} on this order.`}
                       </span>
                     </p>
                     <button
@@ -371,7 +381,7 @@ export function CheckoutClient() {
                 ) : referralOpen ? (
                   <div>
                     <label htmlFor="field-referralCode" className="mb-1.5 block text-sm font-semibold">
-                      Referral code
+                      Referral or coupon code
                     </label>
                     <div className="flex gap-2">
                       <input
@@ -388,7 +398,7 @@ export function CheckoutClient() {
                             applyReferral();
                           }
                         }}
-                        placeholder="ELANXXXXXX"
+                        placeholder="Enter code"
                         autoCapitalize="characters"
                         autoComplete="off"
                         aria-invalid={!!referralError}
@@ -412,7 +422,7 @@ export function CheckoutClient() {
                       </p>
                     ) : (
                       <p id="hint-referralCode" className="mt-1.5 text-sm text-ink/60">
-                        A friend&apos;s code makes one product free. Fill in your mobile and email first.
+                        Fill in your mobile and email first. One code per order.
                       </p>
                     )}
                   </div>
@@ -422,7 +432,7 @@ export function CheckoutClient() {
                     onClick={() => setReferralOpen(true)}
                     className="flex min-h-11 items-center gap-2 text-sm font-semibold underline underline-offset-4"
                   >
-                    <GiftIcon className="size-4" /> Have a referral code?
+                    <GiftIcon className="size-4" /> Have a referral or coupon code?
                   </button>
                 )}
               </div>
@@ -430,7 +440,9 @@ export function CheckoutClient() {
               <dl className="mt-3 space-y-2 border-t border-ink/10 pt-4 text-base">
                 <Row label="Subtotal" value={inr(subtotal)} />
                 {mrpTotal > subtotal && <Row label="You save" value={`− ${inr(mrpTotal - subtotal)}`} muted />}
-                {discount > 0 && <Row label="Referral: 1 product free" value={`− ${inr(discount)}`} />}
+                {discount > 0 && (
+                  <Row label={`${promo?.kind === "coupon" ? `Coupon ${referral}` : "Referral"}: ${promo?.label}`} value={`− ${inr(discount)}`} />
+                )}
                 <Row label="Delivery" value={shipping === 0 ? "Free" : inr(shipping)} />
                 {shipping > 0 && !referral && (
                   <p className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm text-ink/80">

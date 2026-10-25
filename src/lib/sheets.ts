@@ -1,4 +1,6 @@
 import "server-only";
+import { mirrorOrder } from "./orders-db";
+import type { PricedLine } from "./pricing";
 
 // Sends checkout events to the Google Sheet via its Apps Script web app
 // (integrations/google-sheets/Code.gs). One row per order, updated as the
@@ -38,9 +40,19 @@ export type SheetRow = Partial<{
   discount: number;
   /** This customer's own code to share (issued once paid). */
   referralCode: string;
+  /** Admin coupon this order used (its discount goes in `discount`). */
+  couponUsed: string;
 }>;
 
-export async function recordOrder(orderNo: string, data: SheetRow) {
+/**
+ * Records an order event in the Google Sheet and the orders database (admin dashboard).
+ * `items` is only needed once, at checkout. Never throws.
+ */
+export async function recordOrder(orderNo: string, data: SheetRow, items?: PricedLine[]) {
+  await Promise.all([writeSheet(orderNo, data), mirrorOrder(orderNo, data, items)]);
+}
+
+async function writeSheet(orderNo: string, data: SheetRow) {
   const url = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
   const secret = process.env.GOOGLE_SHEETS_WEBHOOK_SECRET;
   if (!url || !secret) {

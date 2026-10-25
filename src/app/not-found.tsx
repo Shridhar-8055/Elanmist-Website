@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { SiteChrome } from "@/components/SiteChrome";
 
 export default function NotFound() {
   return (
+    <SiteChrome>
     <section className="grid min-h-[70svh] place-items-center px-5 text-center">
       <div>
         <h1 className="display text-[clamp(64px,12vw,180px)] text-pale-2">404</h1>
@@ -11,5 +13,6 @@ export default function NotFound() {
         </Link>
       </div>
     </section>
+    </SiteChrome>
   );
 }

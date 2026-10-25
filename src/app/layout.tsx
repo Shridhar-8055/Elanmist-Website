@@ -1,10 +1,5 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { AnnouncementBar } from "@/components/AnnouncementBar";
-import { CartDrawer } from "@/components/CartDrawer";
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
-import { CartProvider } from "@/lib/cart";
 import "./globals.css";
 
 // Fonts are self-hosted from the @fontsource packages (latin subset) so builds never
@@ -59,15 +54,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" data-scroll-behavior="smooth" className={`${inter.variable} ${interTight.variable} ${instrument.variable} ${poppins.variable} ${dmSans.variable}`}>
-      <body className="min-h-svh">
-        <CartProvider>
-          <AnnouncementBar />
-          <Header />
-          <main>{children}</main>
-          <Footer />
-          <CartDrawer />
-        </CartProvider>
-      </body>
+      <body className="min-h-svh">{children}</body>
     </html>
   );
 }

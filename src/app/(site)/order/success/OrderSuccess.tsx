@@ -63,7 +63,7 @@ export function OrderSuccess() {
               </div>
               {!!order.totals.discount && (
                 <div className="flex justify-between">
-                  <dt>Referral: 1 product free</dt>
+                  <dt>Discount</dt>
                   <dd>− {inr(order.totals.discount)}</dd>
                 </div>
               )}

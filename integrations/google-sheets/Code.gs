@@ -21,7 +21,8 @@ var HEADERS = [
   // Delivery columns (added later — appended so existing sheets stay aligned).
   'Shipment status', 'Courier', 'AWB', 'Tracking link', 'Shiprocket Order ID',
   // Referral columns.
-  'Referral code used', 'Referral discount (₹)', 'Own referral code',
+  'Referral code used', 'Discount (₹)', 'Own referral code',
+  'Coupon code used',
 ];
 
 // Map from the JSON keys the website sends to the column headers above.
@@ -49,8 +50,9 @@ var FIELD_TO_HEADER = {
   trackingUrl: 'Tracking link',
   shiprocketOrderId: 'Shiprocket Order ID',
   referralUsed: 'Referral code used',
-  discount: 'Referral discount (₹)',
+  discount: 'Discount (₹)',
   referralCode: 'Own referral code',
+  couponUsed: 'Coupon code used',
 };
 
 // A "Paid" row must never be downgraded by a late or retried event.

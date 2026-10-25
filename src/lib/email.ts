@@ -60,6 +60,7 @@ export async function sendOrderConfirmation(order: PaidOrder, siteUrl: string, r
 
   const subtotal = Number(n.subtotal ?? 0);
   const discount = Number(n.discount ?? 0);
+  const discountLabel = n.coupon_code ? `Coupon ${n.coupon_code}` : "Referral discount (1 product free)";
   const shipping = Number(n.shipping ?? 0);
   const total = Number(n.total ?? subtotal - discount + shipping);
   const firstName = (n.customer_name ?? "").trim().split(/\s+/)[0] || "there";
@@ -79,6 +80,7 @@ export async function sendOrderConfirmation(order: PaidOrder, siteUrl: string, r
         lines,
         subtotal,
         discount,
+        discountLabel,
         shipping,
         total,
         address,
@@ -93,7 +95,7 @@ export async function sendOrderConfirmation(order: PaidOrder, siteUrl: string, r
         ``,
         `Order number: ${order.receipt}`,
         ...lines.map((l) => `- ${l.name} x${l.qty}: ${inr(l.total)}`),
-        ...(discount ? [`Referral discount (1 product free): -${inr(discount)}`] : []),
+        ...(discount ? [`${discountLabel}: -${inr(discount)}`] : []),
         `Delivery: ${shipping ? inr(shipping) : "Free"}`,
         `Total paid: ${inr(total)}`,
         ``,
@@ -128,6 +130,7 @@ function confirmationHtml(d: {
   lines: { name: string; qty: number; total: number }[];
   subtotal: number;
   discount: number;
+  discountLabel: string;
   shipping: number;
   total: number;
   address: string[];
@@ -191,7 +194,7 @@ function confirmationHtml(d: {
           </table>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
             ${row("Subtotal", inr(d.subtotal))}
-            ${d.discount ? row("Referral discount (1 product free)", `&minus;${inr(d.discount)}`) : ""}
+            ${d.discount ? row(esc(d.discountLabel), `&minus;${inr(d.discount)}`) : ""}
             ${row("Delivery", d.shipping ? inr(d.shipping) : "Free")}
             ${row("Total paid", inr(d.total), true)}
           </table>

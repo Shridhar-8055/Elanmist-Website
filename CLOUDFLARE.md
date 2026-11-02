@@ -50,3 +50,19 @@ Vercel recommends **DNS only** (grey cloud) for domains pointing at Vercel. Verc
 In Cloudflare DNS, set the `@` A record and `www` back to their old values with the orange cloud on, as noted in step B.2. The old WordPress site is back within a minute or two.
 
 **Before editing, take a screenshot of the DNS records page** so you have the old values.
+
+### Old values (recorded 2026-10-25, before the switch; all were orange-cloud Proxied)
+
+| Name | Type | Value |
+|---|---|---|
+| `elanmist.com` | A | `88.223.87.22` |
+| `elanmist.com` | A | `145.223.124.69` |
+| `elanmist.com` | AAAA | `2a02:4780:4d:dce2:2edb:e226:5f81:36a4` |
+| `elanmist.com` | AAAA | `2a02:4780:4a:e8fa:225e:83e8:8328:e78c` |
+| `www` | CNAME | `www.elanmist.com.cdn.hstgr.net` |
+
+To roll back, put these back (Proxied) and remove the Vercel values.
+
+### Records to keep (email and services)
+
+Keep `ftp`, `autoconfig`, `autodiscover`, `hostingermail-a/b/c._domainkey`, both MX, `_dmarc`, the SPF TXT, and the Resend records (`send`, `rsend`, `resend._domainkey`, all DNS only).

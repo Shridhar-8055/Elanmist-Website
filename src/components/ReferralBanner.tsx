@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { SHIPPING_FEE } from "@/lib/products";
+import { CouponArt, couponPattern } from "./CouponArt";
 import { ArrowRight, GiftIcon } from "./icons";
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -69,7 +70,7 @@ export function ReferralBanner() {
   return (
     <section aria-labelledby="referral-heading" className="bg-white px-4 pt-20 md:pt-28">
       <div className="relative mx-auto max-w-[1280px]">
-        <div className="relative grid overflow-hidden rounded-[32px] bg-wine text-white md:grid-cols-[1.35fr_1fr] md:rounded-[44px]">
+        <div className="relative grid overflow-hidden rounded-[32px] bg-wine text-white md:grid-cols-[1.35fr_1fr] md:rounded-[44px]" style={{ backgroundImage: couponPattern }}>
           {/* Soft glow */}
           <span aria-hidden className="pointer-events-none absolute -left-24 -top-24 size-[380px] rounded-full bg-[#e8a6b3]/20 blur-3xl" />
 
@@ -105,13 +106,14 @@ export function ReferralBanner() {
           </div>
 
           {/* Tear-off stub. A dotted line and two notches separate it from the main side. */}
-          <div className="relative border-t-2 border-dashed border-white/25 p-7 sm:p-10 md:border-l-2 md:border-t-0 md:p-14">
+          <div className="relative overflow-hidden border-t-2 border-dashed border-white/25 bg-[#1a080b]/60 p-7 sm:p-10 md:overflow-visible md:border-l-2 md:border-t-0 md:p-14">
+            <CouponArt />
             <span aria-hidden className="absolute -top-4 left-0 size-8 -translate-x-1/2 rounded-full bg-white md:-left-4 md:top-0 md:-translate-y-1/2 md:translate-x-0" />
             <span aria-hidden className="absolute -top-4 right-0 size-8 translate-x-1/2 rounded-full bg-white md:-left-4 md:bottom-0 md:right-auto md:top-auto md:translate-x-0 md:translate-y-1/2" />
 
-            <div className="flex h-full flex-col justify-center">
+            <div className="relative flex h-full flex-col justify-center">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Your referral code</p>
-              <div className="mt-4 rounded-2xl border border-dashed border-white/40 bg-black/20 px-5 py-5 text-center">
+              <div className="mt-4 rounded-2xl border border-dashed border-white/40 bg-[#1a080b]/80 px-5 py-5 text-center backdrop-blur-sm">
                 <ShufflingCode />
               </div>
               <ul className="mt-6 space-y-2.5 text-sm text-white/80">

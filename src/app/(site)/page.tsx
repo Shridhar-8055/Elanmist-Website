@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUpRight, CheckIcon } from "@/components/icons";
 import { Reveal } from "@/components/InView";
 import { Newsletter } from "@/components/Newsletter";
 import { Philosophy } from "@/components/Philosophy";
+import { ReferralBanner } from "@/components/ReferralBanner";
 import { discount, inr, products, skinTypes } from "@/lib/products";
 import { altFor } from "@/lib/imageAlt";
 
@@ -269,6 +270,8 @@ export default function Home() {
           <p className="mt-8 text-sm font-semibold">Sneha D. · HydroBoost Gel</p>
         </Reveal>
       </section>
+
+      <ReferralBanner />
 
       {/* RESEARCH CTA */}
       <section className="bg-white px-4 pt-20 md:pt-28">

@@ -8,6 +8,7 @@ import { logoutAction } from "../actions";
 const links = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/orders", label: "Orders" },
+  { href: "/admin/notifications", label: "Notifications" },
   { href: "/admin/customers", label: "Customers" },
   { href: "/admin/coupons", label: "Coupons" },
   { href: "/admin/referrals", label: "Referral codes" },

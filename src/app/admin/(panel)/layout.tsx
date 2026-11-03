@@ -2,6 +2,7 @@ import { Wordmark } from "@/components/Wordmark";
 import { requireAdmin } from "@/lib/admin-auth";
 import { logoutAction } from "../actions";
 import { AdminNav } from "./AdminNav";
+import { NotificationBell } from "./notifications/NotificationBell";
 
 export default async function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
   await requireAdmin();
@@ -10,18 +11,21 @@ export default async function AdminPanelLayout({ children }: LayoutProps<"/admin
       {/* The wine column runs the full page height; its contents stay pinned while scrolling. */}
       <aside className="sticky top-0 z-30 bg-wine text-white lg:static lg:min-h-svh">
         <div className="lg:sticky lg:top-0">
-        <div className="flex items-center justify-between gap-3 px-4 py-3 lg:block lg:px-6 lg:py-7">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-6 lg:py-7">
           <p className="text-[26px] leading-none">
             <Wordmark />
             <span className="ml-2 align-middle text-[11px] font-semibold uppercase not-italic tracking-[0.2em] text-[#e8a6b3]">
               Admin
             </span>
           </p>
+          <div className="flex items-center gap-2">
+          <NotificationBell />
           <form action={logoutAction} className="lg:hidden">
             <button type="submit" className="rounded-full border border-white/30 px-3 py-1.5 text-xs font-semibold">
               Sign out
             </button>
           </form>
+          </div>
         </div>
         <AdminNav />
         </div>

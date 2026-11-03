@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { BuyButton, QuickAdd } from "@/components/CartButtons";
+import { HeroShowcase } from "@/components/HeroShowcase";
 import { ArrowRight, ArrowUpRight, CheckIcon } from "@/components/icons";
 import { Reveal } from "@/components/InView";
 import { Newsletter } from "@/components/Newsletter";
@@ -17,49 +18,9 @@ const keyIngredients = [
 ];
 
 export default function Home() {
-  const hero = products[0];
-
   return (
     <>
-      {/* HERO — full-bleed, product photo melting into its backdrop, copy on the right. */}
-      <section className="relative h-[calc(100svh-36px)] min-h-[620px] overflow-hidden" style={{ background: hero.backdrop }}>
-        <div className="absolute bottom-0 left-1/2 top-[34%] w-[120%] -translate-x-1/2 md:inset-y-0 md:left-[4%] md:w-[58%] md:translate-x-0">
-          <Image
-            src={hero.image}
-            alt={hero.imageAlt}
-            fill
-            preload
-            sizes="(min-width: 768px) 58vw, 120vw"
-            className="photo-fade object-cover object-[50%_60%]"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/55 md:bg-gradient-to-r md:from-transparent md:via-black/15 md:to-black/60" />
-        <div className="relative z-10 mx-auto flex h-full max-w-[1440px] flex-col justify-between px-6 pb-14 pt-28 text-center text-white md:flex-row md:items-center md:justify-end md:px-[8vw] md:pb-0 md:pt-0 md:text-left">
-          <div className="animate-fade-up md:max-w-[520px]">
-            <p className="font-serif text-[clamp(20px,1.6vw,26px)] italic text-white/90">Imagined with nature, proven by science</p>
-            <h1 className="display mt-3 text-[clamp(46px,5.4vw,84px)] [text-shadow:0_4px_40px_rgb(0_0_0/0.35)]">
-              Embrace Your Natural Radiance
-            </h1>
-            <p className="mt-5 hidden max-w-[40ch] text-[17px] text-white/90 md:block">
-              Science-backed formulas with natural ingredients for luminous, healthy skin.
-            </p>
-            <Link
-              href="/shop"
-              className="mt-10 hidden h-[52px] items-center gap-2.5 rounded-full bg-white px-8 text-base font-semibold text-ink transition-transform hover:scale-[1.03] md:inline-flex"
-            >
-              Shop the range <ArrowRight className="size-4" />
-            </Link>
-          </div>
-          <div className="animate-fade-up md:hidden" style={{ animationDelay: "200ms" }}>
-            <Link href="/shop" className="inline-flex h-[52px] items-center gap-2.5 rounded-full bg-white px-8 text-base font-semibold text-ink">
-              Shop the range <ArrowRight className="size-4" />
-            </Link>
-          </div>
-        </div>
-        <div className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-white/80 md:block">
-          Scroll
-        </div>
-      </section>
+      <HeroShowcase />
 
       {/* PRODUCT PANELS — sticky full-height stack, one per product. */}
       <section aria-label="Products">

@@ -76,8 +76,11 @@ export function Header() {
   }, []);
 
   // Pages that open on a dark, full-bleed visual get a light logo until scrolled.
+  // The home hero sits under the header. Its backdrop is light, so the header keeps its
+  // dark text; `light` switches to white text for any future page with a dark top.
   const darkTop = pathname === "/";
-  const light = darkTop && !scrolled && !menuOpen;
+  const DARK_HERO = false;
+  const light = DARK_HERO && darkTop && !scrolled && !menuOpen;
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href.split("#")[0]));
 
   return (

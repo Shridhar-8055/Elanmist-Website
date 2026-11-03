@@ -40,8 +40,9 @@ export class RazorpayApiError extends Error {
 }
 
 function credentials() {
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  // Trim: a space or newline pasted into the Vercel dashboard would otherwise fail every call.
+  const keyId = process.env.RAZORPAY_KEY_ID?.trim();
+  const keySecret = process.env.RAZORPAY_KEY_SECRET?.trim();
   if (!keyId || !keySecret) {
     throw new RazorpayConfigError("Razorpay keys are not configured (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET).");
   }
@@ -111,7 +112,7 @@ export function verifyPaymentSignature(orderId: string, paymentId: string, signa
 
 /** Verifies the X-Razorpay-Signature header on webhooks against the raw request body. */
 export function verifyWebhookSignature(rawBody: string, signature: string | null) {
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET?.trim();
   if (!secret) throw new RazorpayConfigError("RAZORPAY_WEBHOOK_SECRET is not configured.");
   if (!signature) return false;
   const expected = createHmac("sha256", secret).update(rawBody).digest("hex");

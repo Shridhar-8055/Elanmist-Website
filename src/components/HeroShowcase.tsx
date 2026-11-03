@@ -135,13 +135,15 @@ export function HeroShowcase() {
                   onClick={() => setActive(i)}
                   aria-label={`Show ${p.name}`}
                   aria-pressed={front}
-                  className="absolute left-1/2 top-1/2 w-[68%] cursor-pointer mix-blend-multiply outline-none transition-[transform,filter] duration-700 ease-[cubic-bezier(.22,1,.36,1)] focus-visible:drop-shadow-[0_0_0_3px_#0d0b0b] motion-reduce:transition-none"
+                  className="pointer-events-none absolute left-1/2 top-1/2 w-[68%] mix-blend-multiply outline-none transition-[transform,filter] duration-700 ease-[cubic-bezier(.22,1,.36,1)] focus-visible:drop-shadow-[0_0_0_3px_#0d0b0b] motion-reduce:transition-none"
                   style={{
                     transform: `translate(calc(-50% + ${dx}%), calc(-50% + ${dy}%)) rotate(${s.rotate + tilt.x * 4}deg) scale(${s.scale})`,
                     zIndex: front ? 3 : 1,
                     filter: front ? "brightness(1.07) contrast(1.06)" : "brightness(1.1) contrast(1.06) saturate(0.85)",
                   }}
                 >
+                  {/* The photo has wide white margins, so only the product itself takes taps. */}
+                  <span aria-hidden className="pointer-events-auto absolute inset-x-[30%] inset-y-[10%] cursor-pointer" />
                   <span className="relative block aspect-square">
                     <Image
                       src={STAGE_IMAGE[p.slug]}

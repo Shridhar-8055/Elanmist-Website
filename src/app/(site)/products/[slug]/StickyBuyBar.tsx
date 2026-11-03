@@ -23,17 +23,26 @@ export function StickyBuyBar({
   image: string;
   backdrop: string;
 }) {
-  const [show, setShow] = useState(false);
+  const [pastBuyBox, setPastBuyBox] = useState(false);
+  const [atFooter, setAtFooter] = useState(false);
+  // Step aside once the footer is on screen so its links stay tappable.
+  const show = pastBuyBox && !atFooter;
 
   useEffect(() => {
     const box = document.getElementById("buy-box");
     if (!box) return;
     const mobile = window.matchMedia("(max-width: 767px)");
     const io = new IntersectionObserver(([e]) =>
-      setShow(!e.isIntersecting && (mobile.matches || e.boundingClientRect.top < 0)),
+      setPastBuyBox(!e.isIntersecting && (mobile.matches || e.boundingClientRect.top < 0)),
     );
     io.observe(box);
-    return () => io.disconnect();
+    const footer = document.querySelector("footer");
+    const fo = new IntersectionObserver(([e]) => setAtFooter(e.isIntersecting));
+    if (footer) fo.observe(footer);
+    return () => {
+      io.disconnect();
+      fo.disconnect();
+    };
   }, []);
 
   return (

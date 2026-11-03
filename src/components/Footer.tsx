@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { products, shippingInfo } from "@/lib/products";
 import { ArrowRight, ArrowUpRight, ClockIcon, HeadsetIcon, InstagramIcon, ReturnIcon, TruckIcon } from "./icons";
+import { BackToTop } from "./NavButtons";
 import { Wordmark } from "./Wordmark";
 
 const columns = [
@@ -147,17 +148,17 @@ export function Footer() {
 
         <div className="mt-16 flex flex-col-reverse items-start justify-between gap-4 border-t border-white/15 py-6 text-xs text-white/75 md:flex-row md:items-center">
           <p>© {new Date().getFullYear()} Elanmist. Premium skincare powered by nature and science. Made in India.</p>
-          <a href="#" className="inline-flex items-center gap-2 text-white/85 transition-colors hover:text-white">
+          <BackToTop className="relative z-10 inline-flex cursor-pointer items-center gap-2 text-white/85 transition-colors hover:text-white">
             Back to top
             <span className="grid size-11 place-items-center rounded-full ring-1 ring-white/40">
               <ArrowRight className="size-3.5 -rotate-90" />
             </span>
-          </a>
+          </BackToTop>
         </div>
       </div>
 
       {/* Oversized wordmark that fades out and bleeds off the bottom edge. */}
-      <div aria-hidden className="relative -mb-[0.22em] select-none text-center leading-none">
+      <div aria-hidden className="pointer-events-none relative -mb-[0.22em] select-none text-center leading-none">
         <Wordmark className="block font-poppins not-italic font-semibold tracking-[-0.05em] bg-gradient-to-b from-white/25 to-white/0 bg-clip-text pr-[0.08em] text-[clamp(96px,23vw,340px)] text-transparent" />
       </div>
     </footer>

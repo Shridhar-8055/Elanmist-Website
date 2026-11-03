@@ -11,7 +11,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
     <CartProvider>
       <AnnouncementBar />
       <Header />
-      <main>{children}</main>
+      <main id="main" tabIndex={-1} className="outline-none">{children}</main>
       <Footer />
       <WhatsAppButton />
       <CartDrawer />

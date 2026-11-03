@@ -44,7 +44,7 @@ const dmSans = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: "Elanmist — Premium Skincare Powered by Nature and Science",
+    default: "Elanmist | Premium Skincare Powered by Nature and Science",
     template: "%s | Elanmist",
   },
   description:
